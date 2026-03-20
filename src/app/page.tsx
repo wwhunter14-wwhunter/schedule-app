@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import { format, isToday, isTomorrow, startOfDay, endOfDay, addDays } from 'date-fns'
 import { ko } from 'date-fns/locale'

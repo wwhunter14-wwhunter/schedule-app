@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import TagSearchPage from './TagSearchPage'
 
+export const dynamic = 'force-dynamic'
 export const metadata = { title: '태그' }
 
 export default async function TagsPage() {
