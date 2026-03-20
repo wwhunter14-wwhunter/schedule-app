@@ -1,0 +1,3 @@
+{
+  "buildCommand": "sed -i 's/provider = \"sqlite\"/provider = \"postgresql\"/' prisma/schema.prisma && prisma generate && next build"
+}
