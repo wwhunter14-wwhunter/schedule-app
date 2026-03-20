@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  color     String     @default("#6366f1")
+  createdAt DateTime   @default(now())
+  schedules Schedule[]
+}
+
+model Tag {
+  id        Int           @id @default(autoincrement())
+  name      String        @unique
+  schedules ScheduleTag[]
+}
+
+model RecurringRule {
+  id          Int       @id @default(autoincrement())
+  frequency   String
+  interval    Int       @default(1)
+  daysOfWeek  String?
+  endDate     DateTime?
+  count       Int?
+  schedules   Schedule[]
+}
+
+model Schedule {
+  id              Int            @id @default(autoincrement())
+  title           String
+  description     String?
+  memo            String?
+  attachmentName  String?
+  attachmentPath  String?
+  startAt         DateTime
+  endAt           DateTime
+  allDay          Boolean        @default(false)
+  color           String?
+  notifyMinutes   Int?
+  notifyAt        DateTime?
+  isRecurring     Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  category        Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryId      Int?
+
+  recurringRule   RecurringRule? @relation(fields: [recurringRuleId], references: [id], onDelete: SetNull)
+  recurringRuleId Int?
+
+  tags            ScheduleTag[]
+}
+
+model ScheduleTag {
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  scheduleId Int
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId      Int
+
+  @@id([scheduleId, tagId])
+}
