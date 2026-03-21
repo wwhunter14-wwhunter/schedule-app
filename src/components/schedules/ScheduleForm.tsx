@@ -22,8 +22,17 @@ const NOTIFY_OPTIONS = [
   { value: '1440', label: '1일 전' },
 ]
 
+export type PrefillData = {
+  title?: string
+  description?: string
+  memo?: string
+  categoryName?: string
+  tagNames?: string[]
+}
+
 type Props = {
   schedule?: ScheduleWithRelations
+  prefill?: PrefillData
 }
 
 function toLocalDatetime(date: Date): string {
@@ -47,14 +56,14 @@ function initRecurring(schedule?: ScheduleWithRelations): RecurringData {
   }
 }
 
-export default function ScheduleForm({ schedule }: Props) {
+export default function ScheduleForm({ schedule, prefill }: Props) {
   const router = useRouter()
   const isEdit = !!schedule
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const [title, setTitle] = useState(schedule?.title ?? '')
-  const [description, setDescription] = useState(schedule?.description ?? '')
-  const [memo, setMemo] = useState(schedule?.memo ?? '')
+  const [title, setTitle] = useState(prefill?.title ?? schedule?.title ?? '')
+  const [description, setDescription] = useState(prefill?.description ?? schedule?.description ?? '')
+  const [memo, setMemo] = useState(prefill?.memo ?? schedule?.memo ?? '')
   const [startAt, setStartAt] = useState(
     schedule ? toLocalDatetime(schedule.startAt) : toLocalDatetime(new Date())
   )
@@ -89,9 +98,58 @@ export default function ScheduleForm({ schedule }: Props) {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    fetch('/api/categories').then((r) => r.json()).then(setCategories)
-    fetch('/api/tags').then((r) => r.json()).then(setTags)
-  }, [])
+    Promise.all([
+      fetch('/api/categories').then((r) => r.json()),
+      fetch('/api/tags').then((r) => r.json()),
+    ]).then(async ([cats, tgs]: [Category[], Tag[]]) => {
+      setCategories(cats)
+      setTags(tgs)
+
+      // prefill: 카테고리 자동 매칭 or 생성
+      if (prefill?.categoryName && !schedule) {
+        const existing = cats.find((c: Category) => c.name === prefill.categoryName)
+        if (existing) {
+          setCategoryId(String(existing.id))
+        } else {
+          const res = await fetch('/api/categories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: prefill.categoryName, color: '#6366f1' }),
+          })
+          if (res.ok) {
+            const newCat: Category = await res.json()
+            setCategories((prev) => [...prev, newCat])
+            setCategoryId(String(newCat.id))
+          }
+        }
+      }
+
+      // prefill: 태그 자동 매칭 or 생성
+      if (prefill?.tagNames?.length && !schedule) {
+        const newIds: number[] = []
+        const updatedTags = [...tgs]
+        for (const tagName of prefill.tagNames) {
+          const existing = updatedTags.find((t: Tag) => t.name === tagName)
+          if (existing) {
+            newIds.push(existing.id)
+          } else {
+            const res = await fetch('/api/tags', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: tagName }),
+            })
+            if (res.ok) {
+              const newTag: Tag = await res.json()
+              updatedTags.push(newTag)
+              newIds.push(newTag.id)
+            }
+          }
+        }
+        setTags(updatedTags)
+        setSelectedTagIds(newIds)
+      }
+    })
+  }, [prefill, schedule])
 
   const toggleTag = (tagId: number) => {
     setSelectedTagIds((prev) =>
