@@ -25,6 +25,8 @@ const NOTIFY_OPTIONS = [
 export type PrefillData = {
   title?: string
   description?: string
+  summary?: string
+  sourceUrl?: string
   memo?: string
   categoryName?: string
   tagNames?: string[]
@@ -63,6 +65,8 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
 
   const [title, setTitle] = useState(prefill?.title ?? schedule?.title ?? '')
   const [description, setDescription] = useState(prefill?.description ?? schedule?.description ?? '')
+  const [summary, setSummary] = useState(prefill?.summary ?? schedule?.summary ?? '')
+  const [sourceUrl, setSourceUrl] = useState(prefill?.sourceUrl ?? schedule?.sourceUrl ?? '')
   const [memo, setMemo] = useState(prefill?.memo ?? schedule?.memo ?? '')
   const [startAt, setStartAt] = useState(
     schedule ? toLocalDatetime(schedule.startAt) : toLocalDatetime(new Date())
@@ -219,6 +223,8 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
     const body = {
       title,
       description: description || undefined,
+      summary: summary || undefined,
+      sourceUrl: sourceUrl || undefined,
       memo: memo || undefined,
       attachmentName: attachmentName || undefined,
       attachmentPath: attachmentPath || undefined,
@@ -285,15 +291,39 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
         />
       </div>
 
+      {/* 링크 */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">링크 (URL)</label>
+        <input
+          type="url"
+          value={sourceUrl}
+          onChange={(e) => setSourceUrl(e.target.value)}
+          className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+          placeholder="https://... (선택)"
+        />
+      </div>
+
       {/* 설명 */}
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">설명</label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          rows={2}
+          className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+          placeholder="한 줄 설명 (선택)"
+        />
+      </div>
+
+      {/* 요약 */}
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">요약</label>
+        <textarea
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
           rows={3}
           className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
-          placeholder="상세 내용 (선택)"
+          placeholder="콘텐츠 핵심 요약 (선택)"
         />
       </div>
 

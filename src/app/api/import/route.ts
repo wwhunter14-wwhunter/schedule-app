@@ -43,15 +43,15 @@ export async function POST(request: NextRequest) {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 600,
+    max_tokens: 800,
     messages: [{
       role: 'user',
-      content: `다음 콘텐츠를 일정으로 등록할게. 한국어로 분석해서 JSON만 반환해줘.\n\n${contextInfo}\nURL: ${url}\n\n형식:\n{\n  "title": "일정 제목",\n  "description": "한 줄 설명",\n  "memo": "해시태그 3~5개 + 짧은 메모",\n  "categoryName": "카테고리 1개",\n  "tagNames": ["태그1", "태그2", "태그3"]\n}`,
+      content: `다음 콘텐츠를 일정으로 등록할게. 한국어로 분석해서 JSON만 반환해줘.\n\n${contextInfo}\nURL: ${url}\n\n형식:\n{\n  "title": "일정 제목",\n  "description": "한 줄 설명",\n  "summary": "3~5줄 핵심 요약 (정보성 콘텐츠인 경우)",\n  "memo": "해시태그 3~5개",\n  "categoryName": "카테고리 1개",\n  "tagNames": ["태그1", "태그2", "태그3"]\n}`,
     }],
   })
 
   const raw = (message.content[0] as { type: string; text: string }).text.trim()
-  let parsed: { title?: string; description?: string; memo?: string; categoryName?: string; tagNames?: string[] }
+  let parsed: { title?: string; description?: string; summary?: string; memo?: string; categoryName?: string; tagNames?: string[] }
   try {
     const jsonMatch = raw.match(/\{[\s\S]*\}/)
     parsed = JSON.parse(jsonMatch?.[0] ?? raw)
@@ -93,7 +93,9 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       title: parsed.title ?? meta.title,
       description: parsed.description ?? '',
-      memo: `${parsed.memo ?? ''}\n\n🔗 ${url}`.trim(),
+      summary: parsed.summary ?? '',
+      sourceUrl: url,
+      memo: parsed.memo ?? '',
       startAt,
       endAt,
       allDay: false,

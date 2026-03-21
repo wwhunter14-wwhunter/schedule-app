@@ -103,10 +103,33 @@ export default async function ScheduleDetailPage({
           </div>
         </div>
 
+        {schedule.sourceUrl && (
+          <div className="flex items-start gap-3">
+            <span className="text-slate-400 mt-0.5">🔗</span>
+            <a
+              href={schedule.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 dark:text-indigo-400 hover:underline text-sm break-all"
+            >
+              {schedule.sourceUrl}
+            </a>
+          </div>
+        )}
+
         {schedule.description && (
           <div className="flex items-start gap-3">
             <span className="text-slate-400 mt-0.5">📝</span>
             <LinkifiedText text={schedule.description} className="text-slate-700 dark:text-slate-300" preserveNewlines />
+          </div>
+        )}
+
+        {schedule.summary && (
+          <div className="flex items-start gap-3">
+            <span className="text-slate-400 mt-0.5">📋</span>
+            <p className="text-slate-700 dark:text-slate-300 whitespace-pre-wrap text-sm bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700/50 rounded-lg px-3 py-2 flex-1">
+              {schedule.summary}
+            </p>
           </div>
         )}
 

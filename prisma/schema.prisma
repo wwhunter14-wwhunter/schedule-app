@@ -54,6 +54,8 @@ model Schedule {
   id              Int            @id @default(autoincrement())
   title           String
   description     String?
+  summary         String?
+  sourceUrl       String?
   memo            String?
   attachmentName  String?
   attachmentPath  String?

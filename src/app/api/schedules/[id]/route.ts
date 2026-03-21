@@ -73,6 +73,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     data: {
       title: body.title,
       description: body.description,
+      summary: body.summary,
+      sourceUrl: body.sourceUrl,
       memo: body.memo,
       attachmentName: body.attachmentName,
       attachmentPath: body.attachmentPath,

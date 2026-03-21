@@ -43,6 +43,8 @@ export type RecurringFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY'
 export type CreateScheduleInput = {
   title: string
   description?: string
+  summary?: string
+  sourceUrl?: string
   memo?: string
   attachmentName?: string
   attachmentPath?: string
