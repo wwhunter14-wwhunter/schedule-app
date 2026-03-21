@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { signIn, signOut } from 'next-auth/react'
 import Link from 'next/link'
 
 export default function RegisterPage() {
@@ -10,7 +9,6 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,14 +28,14 @@ export default function RegisterPage() {
       return
     }
 
-    // 회원가입 성공 후 자동 로그인
+    // 기존 세션 제거 후 새 계정으로 로그인
+    await signOut({ redirect: false })
     const result = await signIn('credentials', { username, password, redirect: false })
     if (result?.error) {
       setError('로그인에 실패했습니다. 다시 시도해주세요.')
       setLoading(false)
     } else {
-      router.push('/')
-      router.refresh()
+      window.location.href = '/'
     }
   }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { signIn, signOut } from 'next-auth/react'
 import Link from 'next/link'
 
 export default function LoginPage() {
@@ -15,6 +15,7 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
+    await signOut({ redirect: false })
     const result = await signIn('credentials', { username, password, redirect: false })
 
     if (result?.error) {
