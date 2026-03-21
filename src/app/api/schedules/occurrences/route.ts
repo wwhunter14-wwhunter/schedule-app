@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { expandRecurringSchedule } from '@/lib/recurrence'
+import { getSessionUserId, unauthorized } from '@/lib/session'
 
 export async function GET(request: NextRequest) {
+  const userId = await getSessionUserId()
+  if (!userId) return unauthorized()
+
   const { searchParams } = new URL(request.url)
   const from = searchParams.get('from')
   const to = searchParams.get('to')
@@ -15,7 +19,7 @@ export async function GET(request: NextRequest) {
   const windowEnd = new Date(to)
 
   const recurringMasters = await prisma.schedule.findMany({
-    where: { isRecurring: true },
+    where: { userId, isRecurring: true },
     include: { recurringRule: true, category: true },
   })
 
