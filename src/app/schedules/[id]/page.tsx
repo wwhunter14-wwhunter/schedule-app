@@ -45,29 +45,40 @@ export default async function ScheduleDetailPage({
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-center gap-3">
-          {schedule.color && (
-            <div
-              className="w-1 h-full min-h-[2.5rem] rounded-full flex-shrink-0"
-              style={{ backgroundColor: schedule.color }}
-            />
-          )}
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{schedule.title}</h1>
-            {schedule.category && (
-              <div className="mt-1">
-                <CategoryBadge name={schedule.category.name} color={schedule.category.color} />
-              </div>
-            )}
+      {/* 뒤로가기 */}
+      <div className="mb-4">
+        <Link href="/calendar" className="inline-flex items-center gap-1.5 text-sm text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          캘린더로 돌아가기
+        </Link>
+      </div>
+
+      {/* 헤더 카드 */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-4 flex items-start gap-4">
+        {/* 컬러 바 */}
+        <div
+          className="w-1.5 self-stretch rounded-full flex-shrink-0 mt-0.5"
+          style={{ backgroundColor: schedule.color ?? schedule.category?.color ?? '#6366f1' }}
+        />
+        {/* 제목/카테고리 */}
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-snug">{schedule.title}</h1>
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            {schedule.category && <CategoryBadge name={schedule.category.name} color={schedule.category.color} />}
+            {schedule.isRecurring && <span className="text-xs text-slate-400 dark:text-slate-500">↻ 반복</span>}
           </div>
         </div>
-        <div className="flex gap-2">
+        {/* 액션 버튼 */}
+        <div className="flex items-center gap-1 flex-shrink-0">
           <Link
             href={`/schedules/${schedule.id}/edit`}
-            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium transition-colors"
+            title="수정"
+            className="w-10 h-10 flex items-center justify-center rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
-            수정
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
           </Link>
           <ScheduleDeleteButton id={schedule.id} />
         </div>
@@ -165,11 +176,6 @@ export default async function ScheduleDetailPage({
         )}
       </div>
 
-      <div className="mt-4">
-        <Link href="/calendar" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm">
-          ← 캘린더로 돌아가기
-        </Link>
-      </div>
     </div>
   )
 }
