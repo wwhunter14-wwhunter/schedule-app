@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       title: parsed.title ?? meta.title,
       description: parsed.description ?? '',
-      memo: parsed.memo ?? '',
+      memo: `${parsed.memo ?? ''}\n\n🔗 ${url}`.trim(),
       startAt,
       endAt,
       allDay: false,

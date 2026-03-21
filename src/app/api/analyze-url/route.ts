@@ -108,7 +108,7 @@ URL: ${url}
   return NextResponse.json({
     title: parsed.title ?? meta.title,
     description: parsed.description ?? '',
-    memo: parsed.memo ?? '',
+    memo: `${parsed.memo ?? ''}\n\n🔗 ${url}`.trim(),
     categoryName: parsed.categoryName ?? '',
     tagNames: parsed.tagNames ?? [],
   })
