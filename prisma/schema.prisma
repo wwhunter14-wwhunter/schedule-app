@@ -7,18 +7,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id           Int        @id @default(autoincrement())
+  username     String     @unique
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  categories   Category[]
+  tags         Tag[]
+  schedules    Schedule[]
+}
+
 model Category {
   id        Int        @id @default(autoincrement())
-  name      String     @unique
+  name      String
   color     String     @default("#6366f1")
   createdAt DateTime   @default(now())
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   schedules Schedule[]
+
+  @@unique([name, userId])
 }
 
 model Tag {
   id        Int           @id @default(autoincrement())
-  name      String        @unique
+  name      String
+  userId    Int
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   schedules ScheduleTag[]
+
+  @@unique([name, userId])
 }
 
 model RecurringRule {
@@ -47,6 +65,9 @@ model Schedule {
   isRecurring     Boolean        @default(false)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+
+  userId          Int
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   category        Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   categoryId      Int?

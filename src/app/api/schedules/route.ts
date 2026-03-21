@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+import { getSessionUserId, unauthorized } from '@/lib/session'
 import type { CreateScheduleInput } from '@/lib/types'
 
 export async function GET(request: NextRequest) {
+  const userId = await getSessionUserId()
+  if (!userId) return unauthorized()
+
   const { searchParams } = new URL(request.url)
   const from = searchParams.get('from')
   const to = searchParams.get('to')
@@ -11,7 +15,7 @@ export async function GET(request: NextRequest) {
   const tagId = searchParams.get('tagId')
   const q = searchParams.get('q')
 
-  const where: Prisma.ScheduleWhereInput = {}
+  const where: Prisma.ScheduleWhereInput = { userId }
 
   if (from && to) {
     where.OR = [
@@ -22,14 +26,8 @@ export async function GET(request: NextRequest) {
     ]
   }
 
-  if (categoryId) {
-    where.categoryId = parseInt(categoryId)
-  }
-
-  if (tagId) {
-    where.tags = { some: { tagId: parseInt(tagId) } }
-  }
-
+  if (categoryId) where.categoryId = parseInt(categoryId)
+  if (tagId) where.tags = { some: { tagId: parseInt(tagId) } }
   if (q) {
     const keyword = { contains: q }
     where.OR = [
@@ -43,17 +41,16 @@ export async function GET(request: NextRequest) {
   const schedules = await prisma.schedule.findMany({
     where,
     orderBy: { startAt: 'asc' },
-    include: {
-      category: true,
-      recurringRule: true,
-      tags: { include: { tag: true } },
-    },
+    include: { category: true, recurringRule: true, tags: { include: { tag: true } } },
   })
 
   return NextResponse.json(schedules)
 }
 
 export async function POST(request: NextRequest) {
+  const userId = await getSessionUserId()
+  if (!userId) return unauthorized()
+
   const body: CreateScheduleInput = await request.json()
 
   if (!body.title || !body.startAt || !body.endAt) {
@@ -62,13 +59,10 @@ export async function POST(request: NextRequest) {
 
   const startAt = new Date(body.startAt)
   const endAt = new Date(body.endAt)
+  const notifyAt = body.notifyMinutes != null
+    ? new Date(startAt.getTime() - body.notifyMinutes * 60 * 1000)
+    : null
 
-  const notifyAt =
-    body.notifyMinutes != null
-      ? new Date(startAt.getTime() - body.notifyMinutes * 60 * 1000)
-      : null
-
-  // Create recurring rule if needed
   let recurringRuleId: number | undefined
   if (body.recurring) {
     const rule = await prisma.recurringRule.create({
@@ -85,13 +79,13 @@ export async function POST(request: NextRequest) {
 
   const schedule = await prisma.schedule.create({
     data: {
+      userId,
       title: body.title,
       description: body.description,
       memo: body.memo,
       attachmentName: body.attachmentName,
       attachmentPath: body.attachmentPath,
-      startAt,
-      endAt,
+      startAt, endAt,
       allDay: body.allDay ?? false,
       color: body.color,
       notifyMinutes: body.notifyMinutes,
@@ -99,17 +93,9 @@ export async function POST(request: NextRequest) {
       isRecurring: !!body.recurring,
       categoryId: body.categoryId,
       recurringRuleId,
-      tags: body.tagIds
-        ? {
-            create: body.tagIds.map((tagId) => ({ tagId })),
-          }
-        : undefined,
+      tags: body.tagIds ? { create: body.tagIds.map((tagId) => ({ tagId })) } : undefined,
     },
-    include: {
-      category: true,
-      recurringRule: true,
-      tags: { include: { tag: true } },
-    },
+    include: { category: true, recurringRule: true, tags: { include: { tag: true } } },
   })
 
   return NextResponse.json(schedule, { status: 201 })
