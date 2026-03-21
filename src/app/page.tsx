@@ -3,21 +3,66 @@ import { format, isToday, isTomorrow, startOfDay, endOfDay, addDays } from 'date
 import { ko } from 'date-fns/locale'
 import { prisma } from '@/lib/prisma'
 import CategoryBadge from '@/components/categories/CategoryBadge'
+import { expandRecurringSchedule } from '@/lib/recurrence'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: '대시보드' }
+
+type DashboardSchedule = {
+  id: string | number
+  title: string
+  startAt: Date
+  endAt: Date
+  allDay: boolean
+  color: string | null
+  isRecurring: boolean
+  category: { name: string; color: string } | null
+  tags: { tag: { id: number; name: string } }[]
+}
 
 export default async function DashboardPage() {
   const now = new Date()
   const todayStart = startOfDay(now)
   const tomorrowEnd = endOfDay(addDays(now, 1))
 
-  const upcomingSchedules = await prisma.schedule.findMany({
+  // 일반 일정
+  const regularSchedules = await prisma.schedule.findMany({
     where: { startAt: { gte: todayStart, lte: tomorrowEnd }, isRecurring: false },
     orderBy: { startAt: 'asc' },
     take: 20,
     include: { category: true, tags: { include: { tag: true } } },
   })
+
+  // 반복 일정 - 규칙 포함해서 불러오기
+  const recurringMasters = await prisma.schedule.findMany({
+    where: { isRecurring: true },
+    include: { category: true, recurringRule: true, tags: { include: { tag: true } } },
+  })
+
+  // 반복 일정 인스턴스 확장 후 오늘-내일 범위 필터
+  const recurringOccurrences: DashboardSchedule[] = recurringMasters
+    .filter((m) => m.recurringRule !== null)
+    .flatMap((m) => expandRecurringSchedule(m as Parameters<typeof expandRecurringSchedule>[0], todayStart, tomorrowEnd))
+    .map((occ) => {
+      const master = recurringMasters.find((m) => m.id === occ.scheduleId)!
+      return {
+        id: occ.id,
+        title: occ.title,
+        startAt: occ.startAt,
+        endAt: occ.endAt,
+        allDay: occ.allDay,
+        color: occ.color,
+        isRecurring: true,
+        category: master.category,
+        tags: master.tags,
+      }
+    })
+
+  // 합치고 시간순 정렬
+  const upcomingSchedules: DashboardSchedule[] = [
+    ...regularSchedules.map((s) => ({ ...s, id: s.id as string | number })),
+    ...recurringOccurrences,
+  ].sort((a, b) => a.startAt.getTime() - b.startAt.getTime())
 
   const todaySchedules = upcomingSchedules.filter((s) => isToday(s.startAt))
   const tomorrowSchedules = upcomingSchedules.filter((s) => isTomorrow(s.startAt))
@@ -75,13 +120,8 @@ export default async function DashboardPage() {
   )
 }
 
-type Schedule = Awaited<ReturnType<typeof prisma.schedule.findMany>>[number] & {
-  category: { name: string; color: string } | null
-  tags: { tag: { id: number; name: string } }[]
-}
-
 function ScheduleSection({ title, schedules, emptyText, className = '' }: {
-  title: string; schedules: Schedule[]; emptyText: string; className?: string
+  title: string; schedules: DashboardSchedule[]; emptyText: string; className?: string
 }) {
   return (
     <div className={className}>
@@ -94,10 +134,13 @@ function ScheduleSection({ title, schedules, emptyText, className = '' }: {
         </div>
       ) : (
         <div className="space-y-2">
-          {schedules.map((s) => (
+          {schedules.map((s) => {
+            // 반복 일정 id는 "masterId_date" 형식 → 원본 일정 링크로 이동
+            const scheduleId = typeof s.id === 'string' ? s.id.split('_')[0] : s.id
+            return (
             <Link
               key={s.id}
-              href={`/schedules/${s.id}`}
+              href={`/schedules/${scheduleId}`}
               className="flex items-start gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md transition-all"
             >
               <div
@@ -122,7 +165,8 @@ function ScheduleSection({ title, schedules, emptyText, className = '' }: {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

@@ -8,6 +8,8 @@ export async function GET(request: NextRequest) {
   const from = searchParams.get('from')
   const to = searchParams.get('to')
   const categoryId = searchParams.get('categoryId')
+  const tagId = searchParams.get('tagId')
+  const q = searchParams.get('q')
 
   const where: Prisma.ScheduleWhereInput = {}
 
@@ -22,6 +24,20 @@ export async function GET(request: NextRequest) {
 
   if (categoryId) {
     where.categoryId = parseInt(categoryId)
+  }
+
+  if (tagId) {
+    where.tags = { some: { tagId: parseInt(tagId) } }
+  }
+
+  if (q) {
+    const keyword = { contains: q }
+    where.OR = [
+      ...(Array.isArray(where.OR) ? where.OR : []),
+      { title: keyword },
+      { description: keyword },
+      { memo: keyword },
+    ]
   }
 
   const schedules = await prisma.schedule.findMany({

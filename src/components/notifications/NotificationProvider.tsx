@@ -1,8 +1,21 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { requestNotificationPermission, fireNativeNotification } from '@/lib/notifications'
+import { requestNotificationPermission } from '@/lib/notifications'
 import NotificationToast, { type ToastItem } from './NotificationToast'
+
+// 탭 간 중복 알림 방지용 BroadcastChannel
+const notifChannel = typeof window !== 'undefined' ? new BroadcastChannel('schedule-notifications') : null
+
+function fireNotification(swReg: ServiceWorkerRegistration | null, title: string, body: string, tag: string) {
+  if (Notification.permission !== 'granted') return
+  if (swReg) {
+    // Service Worker를 통해 OS 알림 표시 (백그라운드 탭에서도 동작)
+    swReg.showNotification(title, { body, tag, icon: '/favicon.ico', requireInteraction: false })
+  } else {
+    new Notification(title, { body, tag, requireInteraction: false })
+  }
+}
 
 export default function NotificationProvider({
   children,
@@ -12,6 +25,7 @@ export default function NotificationProvider({
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const [showBanner, setShowBanner] = useState(false)
   const seenIds = useRef(new Set<number>())
+  const swReg = useRef<ServiceWorkerRegistration | null>(null)
 
   const dismissToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
@@ -27,11 +41,14 @@ export default function NotificationProvider({
         if (seenIds.current.has(item.id)) continue
         seenIds.current.add(item.id)
 
+        // 다른 탭에도 알림 ID 브로드캐스트해서 중복 방지
+        notifChannel?.postMessage({ type: 'SEEN', id: item.id })
+
         // In-app toast
         setToasts((prev) => [...prev, item])
 
-        // Browser notification
-        fireNativeNotification(item.title, `${item.title} 일정이 곧 시작됩니다`, String(item.id))
+        // OS 알림 (SW 경유)
+        fireNotification(swReg.current, item.title, `${item.title} 일정이 곧 시작됩니다`, String(item.id))
       }
     } catch {
       // Silent fail for polling
@@ -41,17 +58,36 @@ export default function NotificationProvider({
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    // Check if we should show the permission banner
-    if ('Notification' in window && Notification.permission === 'default') {
-      const dismissed = localStorage.getItem('notif_dismissed')
-      if (!dismissed) {
-        setShowBanner(true)
+    // 다른 탭에서 본 알림 ID 동기화
+    if (notifChannel) {
+      notifChannel.onmessage = (e) => {
+        if (e.data?.type === 'SEEN') seenIds.current.add(e.data.id)
       }
+    }
+
+    // Service Worker 등록
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        swReg.current = reg
+      }).catch(() => {/* SW 미지원 환경 무시 */})
+    }
+
+    // 알림 권한 배너
+    if ('Notification' in window && Notification.permission === 'default') {
+      if (!localStorage.getItem('notif_dismissed')) setShowBanner(true)
     }
 
     poll()
     const interval = setInterval(poll, 60_000)
-    return () => clearInterval(interval)
+
+    // 탭이 다시 포커스될 때 즉시 폴링 (놓친 알림 즉시 체크)
+    const handleVisible = () => { if (document.visibilityState === 'visible') poll() }
+    document.addEventListener('visibilitychange', handleVisible)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisible)
+    }
   }, [poll])
 
   const handleEnableNotifications = async () => {
