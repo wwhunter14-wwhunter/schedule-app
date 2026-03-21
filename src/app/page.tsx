@@ -137,8 +137,8 @@ function ScheduleSection({ title, schedules, emptyText, className = '' }: {
                     </a>
                   )}
                   <ScheduleDeleteButton id={Number(scheduleId)} size="sm" />
-                  <Link href={`/schedules/${scheduleId}`} className="w-8 h-8 flex items-center justify-center">
-                    <svg className="w-4 h-4 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <Link href={`/schedules/${scheduleId}`} title="상세 보기" className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
