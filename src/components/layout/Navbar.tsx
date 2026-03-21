@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: '/schedules', label: '검색' },
   { href: '/categories', label: '카테고리' },
   { href: '/tags', label: '태그' },
+  { href: '/settings', label: '내 정보' },
 ]
 
 function ThemeToggle() {
