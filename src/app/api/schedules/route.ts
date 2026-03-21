@@ -15,28 +15,32 @@ export async function GET(request: NextRequest) {
   const tagId = searchParams.get('tagId')
   const q = searchParams.get('q')
 
-  const where: Prisma.ScheduleWhereInput = { userId }
+  const andConditions: Prisma.ScheduleWhereInput[] = [{ userId }]
 
   if (from && to) {
-    where.OR = [
-      { startAt: { gte: new Date(from), lte: new Date(to) } },
-      { endAt: { gte: new Date(from), lte: new Date(to) } },
-      { AND: [{ startAt: { lte: new Date(from) } }, { endAt: { gte: new Date(to) } }] },
-      { isRecurring: true },
-    ]
+    andConditions.push({
+      OR: [
+        { startAt: { gte: new Date(from), lte: new Date(to) } },
+        { endAt: { gte: new Date(from), lte: new Date(to) } },
+        { AND: [{ startAt: { lte: new Date(from) } }, { endAt: { gte: new Date(to) } }] },
+        { isRecurring: true },
+      ],
+    })
   }
 
-  if (categoryId) where.categoryId = parseInt(categoryId)
-  if (tagId) where.tags = { some: { tagId: parseInt(tagId) } }
+  if (categoryId) andConditions.push({ categoryId: parseInt(categoryId) })
+  if (tagId) andConditions.push({ tags: { some: { tagId: parseInt(tagId) } } })
   if (q) {
-    const keyword = { contains: q }
-    where.OR = [
-      ...(Array.isArray(where.OR) ? where.OR : []),
-      { title: keyword },
-      { description: keyword },
-      { memo: keyword },
-    ]
+    andConditions.push({
+      OR: [
+        { title: { contains: q } },
+        { description: { contains: q } },
+        { memo: { contains: q } },
+      ],
+    })
   }
+
+  const where: Prisma.ScheduleWhereInput = { AND: andConditions }
 
   const schedules = await prisma.schedule.findMany({
     where,
