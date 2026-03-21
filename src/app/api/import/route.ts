@@ -43,10 +43,10 @@ export async function POST(request: NextRequest) {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 800,
+    max_tokens: 1500,
     messages: [{
       role: 'user',
-      content: `다음 콘텐츠를 일정으로 등록할게. 한국어로 분석해서 JSON만 반환해줘.\n\n${contextInfo}\nURL: ${url}\n\n형식:\n{\n  "title": "일정 제목",\n  "description": "한 줄 설명",\n  "summary": "3~5줄 핵심 요약 (정보성 콘텐츠인 경우)",\n  "memo": "해시태그 3~5개",\n  "categoryName": "카테고리 1개",\n  "tagNames": ["태그1", "태그2", "태그3"]\n}`,
+      content: `다음 콘텐츠를 일정으로 등록할게. 한국어로 분석해서 JSON만 반환해줘.\n\n${contextInfo}\nURL: ${url}\n\n형식:\n{\n  "title": "일정 제목",\n  "description": "한 줄 설명",\n  "summary": "핵심 내용을 7~10줄로 자세히 요약. 주요 포인트, 배울 수 있는 내용, 중요한 세부사항 포함. 정보성 콘텐츠가 아니면 빈 문자열.",\n  "memo": "해시태그 3~5개",\n  "categoryName": "카테고리 1개",\n  "tagNames": ["태그1", "태그2", "태그3"]\n}`,
     }],
   })
 

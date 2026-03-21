@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
 
   const message = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 800,
+    max_tokens: 1500,
     messages: [{
       role: 'user',
       content: `다음 콘텐츠를 일정으로 등록하려 해. 한국어로 분석해서 JSON만 반환해줘.
@@ -89,7 +89,7 @@ URL: ${url}
 {
   "title": "일정 제목 (간결하게)",
   "description": "한 줄 설명",
-  "summary": "3~5줄 핵심 요약 (정보성 콘텐츠인 경우, 없으면 빈 문자열)",
+  "summary": "핵심 내용을 7~10줄로 자세히 요약. 주요 포인트, 배울 수 있는 내용, 중요한 세부사항 포함. 정보성 콘텐츠가 아니면 빈 문자열.",
   "memo": "관련 해시태그 3~5개 (#태그 형식)",
   "categoryName": "가장 적합한 카테고리 1개",
   "tagNames": ["태그1", "태그2", "태그3"]
