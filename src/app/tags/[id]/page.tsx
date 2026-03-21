@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 import CategoryBadge from '@/components/categories/CategoryBadge'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -20,14 +21,17 @@ export default async function TagSchedulesPage({
   params: Promise<{ id: string }>
   searchParams: Promise<{ q?: string }>
 }) {
+  const session = await auth()
+  const userId = parseInt(session?.user?.id ?? '0')
   const { id } = await params
   const { q } = await searchParams
 
-  const tag = await prisma.tag.findUnique({ where: { id: parseInt(id) } })
+  const tag = await prisma.tag.findFirst({ where: { id: parseInt(id), userId } })
   if (!tag) notFound()
 
   const schedules = await prisma.schedule.findMany({
     where: {
+      userId,
       tags: { some: { tagId: parseInt(id) } },
       ...(q ? { title: { contains: q } } : {}),
     },

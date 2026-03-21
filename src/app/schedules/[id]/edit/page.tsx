@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 import ScheduleForm from '@/components/schedules/ScheduleForm'
 
 export const metadata = { title: '일정 수정' }
@@ -11,9 +12,11 @@ export default async function EditSchedulePage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const session = await auth()
+  const userId = parseInt(session?.user?.id ?? '0')
   const { id } = await params
-  const schedule = await prisma.schedule.findUnique({
-    where: { id: parseInt(id) },
+  const schedule = await prisma.schedule.findFirst({
+    where: { id: parseInt(id), userId },
     include: {
       category: true,
       recurringRule: true,

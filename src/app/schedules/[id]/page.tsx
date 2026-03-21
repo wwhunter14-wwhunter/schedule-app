@@ -9,6 +9,7 @@ import CategoryBadge from '@/components/categories/CategoryBadge'
 import ScheduleDeleteButton from '@/components/schedules/ScheduleDeleteButton'
 import LinkifiedText from '@/components/LinkifiedText'
 import AttachmentViewer from '@/components/AttachmentViewer'
+import { auth } from '@/auth'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -21,9 +22,11 @@ export default async function ScheduleDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const session = await auth()
+  const userId = parseInt(session?.user?.id ?? '0')
   const { id } = await params
-  const schedule = await prisma.schedule.findUnique({
-    where: { id: parseInt(id) },
+  const schedule = await prisma.schedule.findFirst({
+    where: { id: parseInt(id), userId },
     include: {
       category: true,
       recurringRule: true,
