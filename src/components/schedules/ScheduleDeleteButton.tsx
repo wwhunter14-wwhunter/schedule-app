@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 
-export default function ScheduleDeleteButton({ id }: { id: number }) {
+export default function ScheduleDeleteButton({ id, size = 'md' }: { id: number; size?: 'sm' | 'md' }) {
   const router = useRouter()
 
   const handleDelete = async () => {
@@ -16,9 +16,9 @@ export default function ScheduleDeleteButton({ id }: { id: number }) {
     <button
       onClick={handleDelete}
       title="삭제"
-      className="w-10 h-10 flex items-center justify-center rounded-full text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+      className={`${size === 'sm' ? 'w-8 h-8' : 'w-10 h-10'} flex items-center justify-center rounded-full text-red-400 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors`}
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <svg xmlns="http://www.w3.org/2000/svg" width={size === 'sm' ? 14 : 18} height={size === 'sm' ? 14 : 18} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
         <polyline points="3 6 5 6 21 6"/>
         <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
         <path d="M10 11v6M14 11v6"/>
