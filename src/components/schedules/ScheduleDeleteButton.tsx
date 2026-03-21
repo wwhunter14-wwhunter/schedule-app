@@ -8,7 +8,7 @@ export default function ScheduleDeleteButton({ id }: { id: number }) {
   const handleDelete = async () => {
     if (!confirm('이 일정을 삭제하시겠습니까?')) return
     await fetch(`/api/schedules/${id}`, { method: 'DELETE' })
-    router.push('/calendar')
+    router.push('/')
     router.refresh()
   }
 
