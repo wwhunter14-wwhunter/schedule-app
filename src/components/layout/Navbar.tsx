@@ -80,7 +80,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14">
 
           {/* 로고 */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-indigo-600 dark:text-indigo-400">
+          <Link href="/all-schedules" className="flex items-center gap-2 font-bold text-indigo-600 dark:text-indigo-400">
             <span className="text-xl">📅</span>
             <span className="text-base tracking-tight">일정 관리</span>
           </Link>
