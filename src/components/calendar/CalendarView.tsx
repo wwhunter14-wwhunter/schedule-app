@@ -7,7 +7,6 @@ import {
   startOfDay, endOfDay, isSameDay, format,
 } from 'date-fns'
 import { ko } from 'date-fns/locale'
-import KoreanLunarCalendar from 'korean-lunar-calendar'
 import type { CalendarEvent, ScheduleWithRelations, ScheduleOccurrence } from '@/lib/types'
 import CalendarToolbar from './CalendarToolbar'
 import MonthGrid from './MonthGrid'
@@ -56,23 +55,17 @@ function occurrenceToCalendarEvent(o: ScheduleOccurrence): CalendarEvent {
   }
 }
 
-// 음력 날짜 계산
-function getLunarStr(date: Date): string {
-  try {
-    const cal = new KoreanLunarCalendar()
-    cal.setSolarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
-    const l = cal.getLunarCalendar()
-    return `음력 ${l.intercalation ? '윤' : ''}${l.month}월 ${l.day}일`
-  } catch {
-    return ''
-  }
-}
-
 function DayPanel({ date, events }: { date: Date; events: CalendarEvent[] }) {
   const [lunarStr, setLunarStr] = useState('')
 
   useEffect(() => {
-    setLunarStr(getLunarStr(date))
+    const y = date.getFullYear()
+    const m = date.getMonth() + 1
+    const d = date.getDate()
+    fetch(`/api/lunar?year=${y}&month=${m}&day=${d}`)
+      .then((r) => r.json())
+      .then((data) => setLunarStr(data.lunarStr ?? ''))
+      .catch(() => setLunarStr(''))
   }, [date])
 
   const dayEvents = events
