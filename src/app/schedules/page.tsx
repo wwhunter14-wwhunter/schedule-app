@@ -26,7 +26,7 @@ export default async function SchedulesPage({
   const where: Prisma.ScheduleWhereInput = { AND: andConditions }
 
   const [schedules, categories, tags] = await Promise.all([
-    prisma.schedule.findMany({ where, orderBy: { startAt: 'desc' }, take: 50, include: { category: true, tags: { include: { tag: true } } } }),
+    prisma.schedule.findMany({ where, orderBy: { createdAt: 'desc' }, take: 50, include: { category: true, tags: { include: { tag: true } } } }),
     prisma.category.findMany({ where: { userId }, orderBy: { name: 'asc' } }),
     prisma.tag.findMany({ where: { userId }, orderBy: { name: 'asc' } }),
   ])

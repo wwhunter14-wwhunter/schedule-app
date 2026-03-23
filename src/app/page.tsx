@@ -81,15 +81,15 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-3 gap-3 mb-8">
         {[
-          { label: '전체 일정', value: totalCount, icon: '📋' },
-          { label: '오늘', value: todaySchedules.length, icon: '📍' },
-          { label: '내일', value: tomorrowSchedules.length, icon: '🗓️' },
+          { label: '전체 일정', value: totalCount, icon: '📋', href: '/all-schedules' },
+          { label: '오늘', value: todaySchedules.length, icon: '📍', href: `/all-schedules?year=${now.getFullYear()}&month=${now.getMonth() + 1}&day=${now.getDate()}` },
+          { label: '내일', value: tomorrowSchedules.length, icon: '🗓️', href: `/all-schedules?year=${addDays(now,1).getFullYear()}&month=${addDays(now,1).getMonth() + 1}&day=${addDays(now,1).getDate()}` },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-center shadow-sm">
+          <Link key={stat.label} href={stat.href} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-center shadow-sm hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md transition-all">
             <div className="text-2xl mb-1">{stat.icon}</div>
             <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stat.value}</div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{stat.label}</div>
-          </div>
+          </Link>
         ))}
       </div>
 
