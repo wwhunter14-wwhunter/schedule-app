@@ -8,6 +8,8 @@ import {
 } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import type { CalendarEvent, ScheduleWithRelations, ScheduleOccurrence } from '@/lib/types'
+import { getLunarDateStr } from '@/lib/lunarDate'
+import { getHolidayName } from '@/lib/koreanHolidays'
 import CalendarToolbar from './CalendarToolbar'
 import MonthGrid from './MonthGrid'
 import WeekGrid from './WeekGrid'
@@ -59,18 +61,10 @@ function DayPanel({ date, events }: { date: Date; events: CalendarEvent[] }) {
   const [lunarStr, setLunarStr] = useState('')
 
   useEffect(() => {
-    let cancelled = false
-    import('korean-lunar-calendar').then((mod) => {
-      if (cancelled) return
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const KLC = (mod as any).default ?? mod
-      const cal = new KLC()
-      cal.setSolarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
-      const l = cal.getLunarCalendar()
-      if (!cancelled) setLunarStr(`음력 ${l.intercalation ? '윤' : ''}${l.month}월 ${l.day}일`)
-    }).catch(() => { if (!cancelled) setLunarStr('') })
-    return () => { cancelled = true }
+    setLunarStr(getLunarDateStr(date))
   }, [date])
+
+  const holidayName = getHolidayName(date)
 
   const dayEvents = events
     .filter((e) => isSameDay(new Date(e.startAt), date))
@@ -82,6 +76,9 @@ function DayPanel({ date, events }: { date: Date; events: CalendarEvent[] }) {
         <div>
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
             {format(date, 'M월 d일 (E)', { locale: ko })}
+            {holidayName && (
+              <span className="ml-2 text-sm font-medium text-rose-500 dark:text-rose-400">{holidayName}</span>
+            )}
             <span className="ml-2 text-sm font-normal text-slate-400">일정 {dayEvents.length}개</span>
           </h2>
           {lunarStr && (

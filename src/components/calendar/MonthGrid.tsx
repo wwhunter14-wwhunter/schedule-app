@@ -7,6 +7,7 @@ import {
   eachDayOfInterval, isSameDay, isSameMonth, format, isToday,
 } from 'date-fns'
 import type { CalendarEvent } from '@/lib/types'
+import { getHolidayName } from '@/lib/koreanHolidays'
 
 const DAY_HEADERS = ['일', '월', '화', '수', '목', '금', '토']
 const MAX_VISIBLE = 3
@@ -54,6 +55,8 @@ export default function MonthGrid({ viewDate, events, selectedDate, onDateSelect
           const hiddenCount = dayEvents.length - MAX_VISIBLE
           const outsideMonth = !isSameMonth(day, viewDate)
           const isSelected = selectedDate ? isSameDay(day, selectedDate) : false
+          const holidayName = getHolidayName(day)
+          const isHoliday = !!holidayName
 
           return (
             <div
@@ -68,7 +71,7 @@ export default function MonthGrid({ viewDate, events, selectedDate, onDateSelect
               }`}
             >
               {/* 날짜 숫자: 클릭 시 새 일정 페이지 */}
-              <div className="flex items-center gap-1 mb-1">
+              <div className="flex items-center gap-1 mb-0.5">
                 <Link
                   href={`/schedules/new?date=${format(day, 'yyyy-MM-dd')}`}
                   onClick={(e) => e.stopPropagation()}
@@ -79,7 +82,7 @@ export default function MonthGrid({ viewDate, events, selectedDate, onDateSelect
                       ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
                       : outsideMonth
                       ? 'text-slate-300 dark:text-slate-700'
-                      : day.getDay() === 0
+                      : isHoliday || day.getDay() === 0
                       ? 'text-rose-500'
                       : day.getDay() === 6
                       ? 'text-blue-500'
@@ -88,6 +91,11 @@ export default function MonthGrid({ viewDate, events, selectedDate, onDateSelect
                 >
                   {format(day, 'd')}
                 </Link>
+                {holidayName && !outsideMonth && (
+                  <span className="text-[9px] text-rose-400 dark:text-rose-400 truncate leading-tight max-w-[52px]">
+                    {holidayName}
+                  </span>
+                )}
               </div>
 
               {/* 일정 목록 */}
