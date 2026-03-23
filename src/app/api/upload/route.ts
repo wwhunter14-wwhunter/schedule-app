@@ -41,8 +41,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const token = process.env.BLOB_READ_WRITE_TOKEN
+    if (!token) {
+      return NextResponse.json({ error: 'BLOB_READ_WRITE_TOKEN not configured' }, { status: 500 })
+    }
     const blob = await put(`attachments/${Date.now()}-${safeName}`, file, {
       access: 'public',
+      token,
     })
 
     return NextResponse.json({

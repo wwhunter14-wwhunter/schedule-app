@@ -175,12 +175,12 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
     formData.append('file', file)
 
     const res = await fetch('/api/upload', { method: 'POST', body: formData })
+    const data = await res.json()
     if (res.ok) {
-      const data = await res.json()
       setAttachmentName(data.name)
       setAttachmentPath(data.path)
     } else {
-      setError('파일 업로드에 실패했습니다')
+      setError(data.error ?? '파일 업로드에 실패했습니다')
     }
     setUploading(false)
   }
