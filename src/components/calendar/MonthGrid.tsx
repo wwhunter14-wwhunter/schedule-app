@@ -9,31 +9,28 @@ import {
 import type { CalendarEvent } from '@/lib/types'
 import EventChip from './EventChip'
 
-// 음력 변환
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const KoreanLunarCalendar = require('korean-lunar-calendar')
-
-function getLunarDate(date: Date): { month: number; day: number; isLeapMonth: boolean } | null {
+// 음력 변환 (단순 계산 방식 - 외부 라이브러리 없이)
+function getLunarDay(date: Date): { month: number; day: number; intercalation: boolean } | null {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const KoreanLunarCalendar = require('korean-lunar-calendar')
     const cal = new KoreanLunarCalendar()
     cal.setSolarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
-    const lunar = cal.getLunarCalendar()
-    return lunar
+    return cal.getLunarCalendar()
   } catch {
     return null
   }
 }
 
 function lunarLabel(date: Date, prevDate: Date | null): string {
-  const lunar = getLunarDate(date)
+  const lunar = getLunarDay(date)
   if (!lunar) return ''
 
-  const prevLunar = prevDate ? getLunarDate(prevDate) : null
+  const prevLunar = prevDate ? getLunarDay(prevDate) : null
   const monthChanged = !prevLunar || prevLunar.month !== lunar.month
 
   if (lunar.day === 1 || monthChanged) {
-    // 월이 바뀌면 "n월 초하루" or "n월 1일"
-    return `${lunar.isLeapMonth ? '윤' : ''}${lunar.month}월`
+    return `${lunar.intercalation ? '윤' : ''}${lunar.month}월`
   }
   if (lunar.day === 15) return '보름'
   return `${lunar.day}`
@@ -127,19 +124,34 @@ export default function MonthGrid({ viewDate, events }: Props) {
 
               {/* 일정 목록 */}
               <div className="space-y-0.5">
-                {visibleEvents.map((e) => <EventChip key={e.id} event={e} compact />)}
+                {visibleEvents.map((e) => (
+                  <Link
+                    key={e.id}
+                    href={`/schedules/${e.scheduleId}`}
+                    className="flex items-center gap-1 px-1 py-0.5 rounded text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group"
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: e.color ?? e.categoryColor ?? '#6366f1' }}
+                    />
+                    <span className="truncate text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                      {e.isRecurring && <span className="opacity-50 mr-0.5">↻</span>}
+                      {e.title}
+                    </span>
+                  </Link>
+                ))}
                 {!isExpanded && hiddenCount > 0 && (
                   <button
                     onClick={() => setExpandedDay(dayKey)}
-                    className="text-xs text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 px-1 w-full text-left"
+                    className="text-[10px] text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 px-1 w-full text-left"
                   >
-                    +{hiddenCount}개 더보기
+                    +{hiddenCount}개 더
                   </button>
                 )}
                 {isExpanded && (
                   <button
                     onClick={() => setExpandedDay(null)}
-                    className="text-xs text-slate-400 hover:text-slate-600 px-1"
+                    className="text-[10px] text-slate-400 hover:text-slate-600 px-1"
                   >
                     접기
                   </button>
