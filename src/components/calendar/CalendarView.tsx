@@ -55,32 +55,27 @@ function occurrenceToCalendarEvent(o: ScheduleOccurrence): CalendarEvent {
   }
 }
 
-function useLunarDate(date: Date): string {
-  const [lunar, setLunar] = useState('')
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const mod = await import('korean-lunar-calendar')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const KLC = (mod as any).default ?? mod
-        const cal = new KLC()
-        cal.setSolarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
-        const l = cal.getLunarCalendar()
-        if (!cancelled) {
-          setLunar(`음력 ${l.intercalation ? '윤' : ''}${l.month}월 ${l.day}일`)
-        }
-      } catch {
-        if (!cancelled) setLunar('')
-      }
-    })()
-    return () => { cancelled = true }
-  }, [date])
-  return lunar
+// 음력 날짜 계산 (클라이언트 전용)
+function getLunarStr(date: Date): string {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+    const KLC = require('korean-lunar-calendar') as any
+    const cal = new KLC()
+    cal.setSolarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
+    const l = cal.getLunarCalendar()
+    return `음력 ${l.intercalation ? '윤' : ''}${l.month}월 ${l.day}일`
+  } catch {
+    return ''
+  }
 }
 
 function DayPanel({ date, events }: { date: Date; events: CalendarEvent[] }) {
-  const lunarStr = useLunarDate(date)
+  const [lunarStr, setLunarStr] = useState('')
+
+  useEffect(() => {
+    setLunarStr(getLunarStr(date))
+  }, [date])
+
   const dayEvents = events
     .filter((e) => isSameDay(new Date(e.startAt), date))
     .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
@@ -121,7 +116,7 @@ function DayPanel({ date, events }: { date: Date; events: CalendarEvent[] }) {
               />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                  {e.isRecurring && <span className="text-slate-400 mr-1">↻</span>}
+                  {e.isRecurring && <span className="text-slate-400 mr-1 text-xs">↻</span>}
                   {e.title}
                 </p>
                 <p className="text-xs text-slate-400 dark:text-slate-500">
@@ -150,19 +145,15 @@ export default function CalendarView() {
     setLoading(true)
     const [from, to] = getWindowRange(view, viewDate)
     const params = `from=${from.toISOString()}&to=${to.toISOString()}`
-
     try {
       const [schedulesRes, occurrencesRes] = await Promise.all([
         fetch(`/api/schedules?${params}`),
         fetch(`/api/schedules/occurrences?${params}`),
       ])
-
       const schedules: ScheduleWithRelations[] = await schedulesRes.json()
       const occurrences: ScheduleOccurrence[] = await occurrencesRes.json()
-
       const baseEvents = schedules.filter((s) => !s.isRecurring).map(toCalendarEvent)
       const occurrenceEvents = occurrences.map(occurrenceToCalendarEvent)
-
       setEvents([...baseEvents, ...occurrenceEvents])
     } catch (err) {
       console.error('Failed to fetch events', err)
@@ -177,12 +168,7 @@ export default function CalendarView() {
 
   return (
     <div className="relative">
-      <CalendarToolbar
-        view={view}
-        setView={setView}
-        viewDate={viewDate}
-        setViewDate={setViewDate}
-      />
+      <CalendarToolbar view={view} setView={setView} viewDate={viewDate} setViewDate={setViewDate} />
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-10 rounded">
           <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />

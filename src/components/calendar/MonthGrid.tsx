@@ -36,12 +36,9 @@ export default function MonthGrid({ viewDate, events, selectedDate, onDateSelect
       {/* 요일 헤더 */}
       <div className="grid grid-cols-7 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         {DAY_HEADERS.map((d, i) => (
-          <div
-            key={d}
-            className={`py-2.5 text-center text-xs font-semibold uppercase tracking-wide ${
-              i === 0 ? 'text-rose-500' : i === 6 ? 'text-blue-500' : 'text-slate-500 dark:text-slate-400'
-            }`}
-          >
+          <div key={d} className={`py-2.5 text-center text-xs font-semibold uppercase tracking-wide ${
+            i === 0 ? 'text-rose-500' : i === 6 ? 'text-blue-500' : 'text-slate-500 dark:text-slate-400'
+          }`}>
             {d}
           </div>
         ))}
@@ -66,14 +63,16 @@ export default function MonthGrid({ viewDate, events, selectedDate, onDateSelect
                 isSelected
                   ? 'bg-indigo-50 dark:bg-indigo-950/30'
                   : outsideMonth
-                  ? 'bg-slate-50/60 dark:bg-slate-900/40 hover:bg-slate-100/60 dark:hover:bg-slate-900/60'
-                  : 'hover:bg-slate-50 dark:hover:bg-slate-900/60'
+                  ? 'bg-slate-50/60 dark:bg-slate-900/40'
+                  : 'hover:bg-slate-50 dark:hover:bg-slate-900/50'
               }`}
             >
-              {/* 날짜 숫자 */}
+              {/* 날짜 숫자: 클릭 시 새 일정 페이지 */}
               <div className="flex items-center gap-1 mb-1">
-                <div
-                  className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full flex-shrink-0 ${
+                <Link
+                  href={`/schedules/new?date=${format(day, 'yyyy-MM-dd')}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full hover:ring-2 hover:ring-indigo-400 transition-all flex-shrink-0 ${
                     isToday(day)
                       ? 'bg-indigo-600 text-white'
                       : isSelected
@@ -88,7 +87,7 @@ export default function MonthGrid({ viewDate, events, selectedDate, onDateSelect
                   }`}
                 >
                   {format(day, 'd')}
-                </div>
+                </Link>
               </div>
 
               {/* 일정 목록 */}
