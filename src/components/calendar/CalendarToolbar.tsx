@@ -10,9 +10,10 @@ type Props = {
   setView: (v: View) => void
   viewDate: Date
   setViewDate: (d: Date) => void
+  onToday: () => void
 }
 
-export default function CalendarToolbar({ view, setView, viewDate, setViewDate }: Props) {
+export default function CalendarToolbar({ view, setView, viewDate, setViewDate, onToday }: Props) {
   const goPrev = () => {
     if (view === 'month') setViewDate(subMonths(viewDate, 1))
     else if (view === 'week') setViewDate(subWeeks(viewDate, 1))
@@ -33,7 +34,7 @@ export default function CalendarToolbar({ view, setView, viewDate, setViewDate }
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-2">
         <button
-          onClick={() => setViewDate(new Date())}
+          onClick={onToday}
           className="px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium transition-colors"
         >
           오늘

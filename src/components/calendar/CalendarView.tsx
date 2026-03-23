@@ -161,7 +161,13 @@ export default function CalendarView() {
 
   return (
     <div className="relative">
-      <CalendarToolbar view={view} setView={setView} viewDate={viewDate} setViewDate={setViewDate} />
+      <CalendarToolbar
+        view={view}
+        setView={setView}
+        viewDate={viewDate}
+        setViewDate={setViewDate}
+        onToday={() => { const today = new Date(); setViewDate(today); setSelectedDate(today) }}
+      />
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/60 z-10 rounded">
           <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
