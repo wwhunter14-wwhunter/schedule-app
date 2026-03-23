@@ -1,12 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import ScheduleForm, { type PrefillData } from '@/components/schedules/ScheduleForm'
 
 export default function NewSchedulePage() {
+  const searchParams = useSearchParams()
+  const dateParam = searchParams.get('date')
   const [url, setUrl] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
-  const [prefill, setPrefill] = useState<PrefillData | null>(null)
+  const [prefill, setPrefill] = useState<PrefillData | null>(
+    dateParam ? { date: dateParam } : null
+  )
   const [error, setError] = useState('')
   const [formKey, setFormKey] = useState(0)
 

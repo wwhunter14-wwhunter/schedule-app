@@ -30,6 +30,7 @@ export type PrefillData = {
   memo?: string
   categoryName?: string
   tagNames?: string[]
+  date?: string
 }
 
 type Props = {
@@ -68,12 +69,16 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
   const [summary, setSummary] = useState(prefill?.summary ?? schedule?.summary ?? '')
   const [sourceUrl, setSourceUrl] = useState(prefill?.sourceUrl ?? schedule?.sourceUrl ?? '')
   const [memo, setMemo] = useState(prefill?.memo ?? schedule?.memo ?? '')
-  const [startAt, setStartAt] = useState(
-    schedule ? toLocalDatetime(schedule.startAt) : toLocalDatetime(new Date())
-  )
-  const [endAt, setEndAt] = useState(
-    schedule ? toLocalDatetime(schedule.endAt) : toLocalDatetime(new Date(Date.now() + 3600000))
-  )
+  const [startAt, setStartAt] = useState(() => {
+    if (schedule) return toLocalDatetime(schedule.startAt)
+    if (prefill?.date) return `${prefill.date}T09:00`
+    return toLocalDatetime(new Date())
+  })
+  const [endAt, setEndAt] = useState(() => {
+    if (schedule) return toLocalDatetime(schedule.endAt)
+    if (prefill?.date) return `${prefill.date}T10:00`
+    return toLocalDatetime(new Date(Date.now() + 3600000))
+  })
   const [allDay, setAllDay] = useState(schedule?.allDay ?? false)
   const [color, setColor] = useState(schedule?.color ?? '')
   const [notifyMinutes, setNotifyMinutes] = useState(

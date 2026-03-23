@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, isSameDay, isSameMonth, format, isToday,
@@ -60,8 +61,9 @@ export default function MonthGrid({ viewDate, events }: Props) {
                 outsideMonth ? 'bg-slate-50/60 dark:bg-slate-900/40' : ''
               }`}
             >
-              <div
-                className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full mb-1 ${
+              <Link
+                href={`/schedules/new?date=${format(day, 'yyyy-MM-dd')}`}
+                className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full mb-1 hover:ring-2 hover:ring-indigo-400 transition-all ${
                   isToday(day)
                     ? 'bg-indigo-600 text-white'
                     : outsideMonth
@@ -74,7 +76,7 @@ export default function MonthGrid({ viewDate, events }: Props) {
                 }`}
               >
                 {format(day, 'd')}
-              </div>
+              </Link>
               <div className="space-y-0.5">
                 {visibleEvents.map((e) => <EventChip key={e.id} event={e} compact />)}
                 {!isExpanded && hiddenCount > 0 && (

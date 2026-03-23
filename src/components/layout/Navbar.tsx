@@ -122,6 +122,15 @@ export default function Navbar() {
           {/* 모바일 우측 버튼들 */}
           <div className="flex md:hidden items-center gap-2">
             <Link
+              href="/"
+              title="대시보드"
+              className={`w-9 h-9 flex items-center justify-center rounded-lg transition-colors ${
+                pathname === '/' ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </Link>
+            <Link
               href="/schedules/new"
               className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg font-medium transition-colors shadow-sm"
             >

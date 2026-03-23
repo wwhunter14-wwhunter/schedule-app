@@ -80,13 +80,14 @@ export default function WeekGrid({ viewDate, events }: Props) {
             }`}
           >
             <div className="text-xs text-slate-500 dark:text-slate-400">{format(day, 'E', { locale: ko })}</div>
-            <div
-              className={`text-lg font-semibold inline-flex w-8 h-8 items-center justify-center rounded-full ${
+            <Link
+              href={`/schedules/new?date=${format(day, 'yyyy-MM-dd')}`}
+              className={`text-lg font-semibold inline-flex w-8 h-8 items-center justify-center rounded-full hover:ring-2 hover:ring-indigo-400 transition-all ${
                 isToday(day) ? 'bg-indigo-600 text-white' : ''
               }`}
             >
               {format(day, 'd')}
-            </div>
+            </Link>
           </div>
         ))}
       </div>
