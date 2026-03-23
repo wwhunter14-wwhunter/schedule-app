@@ -5,6 +5,7 @@ import { auth } from '@/auth'
 import CategoryBadge from '@/components/categories/CategoryBadge'
 import ScheduleSearchBar from '@/components/schedules/ScheduleSearchBar'
 import StarButton from '@/components/schedules/StarButton'
+import ScheduleDeleteButton from '@/components/schedules/ScheduleDeleteButton'
 import type { Prisma } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
@@ -64,6 +65,7 @@ export default async function SchedulesPage({
                   </a>
                 )}
                 <StarButton id={s.id} isImportant={s.isImportant} size="sm" />
+                <ScheduleDeleteButton id={s.id} size="sm" />
                 <Link href={`/schedules/${s.id}`} title="상세 보기" className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </Link>
