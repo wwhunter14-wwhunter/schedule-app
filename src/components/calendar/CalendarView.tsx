@@ -160,24 +160,26 @@ export default function CalendarView() {
     fetchEvents()
   }, [fetchEvents])
 
-  const touchStartX = useRef<number | null>(null)
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null) return
-    const diff = touchStartX.current - e.changedTouches[0].clientX
-    if (Math.abs(diff) < 50) return
-    if (diff > 0) {
+    if (!touchStart.current) return
+    const dx = touchStart.current.x - e.changedTouches[0].clientX
+    const dy = touchStart.current.y - e.changedTouches[0].clientY
+    touchStart.current = null
+    // 수평 이동이 수직보다 크고 50px 이상일 때만 처리
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return
+    if (dx > 0) {
       // 왼쪽으로 쓸기 → 다음
       setViewDate(d => view === 'month' ? addMonths(d, 1) : view === 'week' ? addWeeks(d, 1) : addDays(d, 1))
     } else {
       // 오른쪽으로 쓸기 → 이전
       setViewDate(d => view === 'month' ? subMonths(d, 1) : view === 'week' ? subWeeks(d, 1) : subDays(d, 1))
     }
-    touchStartX.current = null
   }
 
   return (
