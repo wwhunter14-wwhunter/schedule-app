@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   startOfDay, endOfDay, isSameDay, format,
+  addMonths, subMonths, addWeeks, subWeeks, addDays, subDays,
 } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import type { CalendarEvent, ScheduleWithRelations, ScheduleOccurrence } from '@/lib/types'
@@ -159,8 +160,28 @@ export default function CalendarView() {
     fetchEvents()
   }, [fetchEvents])
 
+  const touchStartX = useRef<number | null>(null)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) < 50) return
+    if (diff > 0) {
+      // 왼쪽으로 쓸기 → 다음
+      setViewDate(d => view === 'month' ? addMonths(d, 1) : view === 'week' ? addWeeks(d, 1) : addDays(d, 1))
+    } else {
+      // 오른쪽으로 쓸기 → 이전
+      setViewDate(d => view === 'month' ? subMonths(d, 1) : view === 'week' ? subWeeks(d, 1) : subDays(d, 1))
+    }
+    touchStartX.current = null
+  }
+
   return (
-    <div className="relative">
+    <div className="relative" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <CalendarToolbar
         view={view}
         setView={setView}
