@@ -71,11 +71,11 @@ export default function MonthGrid({ viewDate, events, selectedDate, onDateSelect
               }`}
             >
               {/* 날짜 숫자: 클릭 시 새 일정 페이지 */}
-              <div className="flex items-center gap-1 mb-0.5">
+              <div className="mb-0.5">
                 <Link
                   href={`/schedules/new?date=${format(day, 'yyyy-MM-dd')}`}
                   onClick={(e) => e.stopPropagation()}
-                  className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full hover:ring-2 hover:ring-indigo-400 transition-all flex-shrink-0 ${
+                  className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full hover:ring-2 hover:ring-indigo-400 transition-all ${
                     isToday(day)
                       ? 'bg-indigo-600 text-white'
                       : isSelected
@@ -92,7 +92,7 @@ export default function MonthGrid({ viewDate, events, selectedDate, onDateSelect
                   {format(day, 'd')}
                 </Link>
                 {holidayName && !outsideMonth && (
-                  <span className="text-[9px] text-rose-400 dark:text-rose-400 truncate leading-tight max-w-[52px]">
+                  <span className="block text-[9px] font-medium text-rose-500 dark:text-rose-400 leading-tight mt-0.5 truncate">
                     {holidayName}
                   </span>
                 )}
