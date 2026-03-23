@@ -65,6 +65,7 @@ model Schedule {
   color           String?
   notifyMinutes   Int?
   notifyAt        DateTime?
+  isImportant     Boolean        @default(false)
   isRecurring     Boolean        @default(false)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt

@@ -6,6 +6,7 @@ import { auth } from '@/auth'
 import CategoryBadge from '@/components/categories/CategoryBadge'
 import { expandRecurringSchedule } from '@/lib/recurrence'
 import ScheduleDeleteButton from '@/components/schedules/ScheduleDeleteButton'
+import StarButton from '@/components/schedules/StarButton'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: '대시보드' }
@@ -17,6 +18,7 @@ type DashboardSchedule = {
   endAt: Date
   allDay: boolean
   color: string | null
+  isImportant: boolean
   isRecurring: boolean
   sourceUrl: string | null
   category: { name: string; color: string } | null
@@ -48,11 +50,11 @@ export default async function DashboardPage() {
     .flatMap((m) => expandRecurringSchedule(m as Parameters<typeof expandRecurringSchedule>[0], todayStart, tomorrowEnd))
     .map((occ) => {
       const master = recurringMasters.find((m) => m.id === occ.scheduleId)!
-      return { id: occ.id, title: occ.title, startAt: occ.startAt, endAt: occ.endAt, allDay: occ.allDay, color: occ.color, isRecurring: true, sourceUrl: master.sourceUrl ?? null, category: master.category, tags: master.tags }
+      return { id: occ.id, title: occ.title, startAt: occ.startAt, endAt: occ.endAt, allDay: occ.allDay, color: occ.color, isImportant: master.isImportant, isRecurring: true, sourceUrl: master.sourceUrl ?? null, category: master.category, tags: master.tags }
     })
 
   const upcomingSchedules: DashboardSchedule[] = [
-    ...regularSchedules.map((s) => ({ ...s, id: s.id as string | number, sourceUrl: s.sourceUrl ?? null })),
+    ...regularSchedules.map((s) => ({ ...s, id: s.id as string | number, sourceUrl: s.sourceUrl ?? null, isImportant: s.isImportant })),
     ...recurringOccurrences,
   ].sort((a, b) => a.startAt.getTime() - b.startAt.getTime())
 
@@ -136,6 +138,7 @@ function ScheduleSection({ title, schedules, emptyText, className = '' }: {
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                     </a>
                   )}
+                  <StarButton id={Number(scheduleId)} isImportant={s.isImportant} size="sm" />
                   <ScheduleDeleteButton id={Number(scheduleId)} size="sm" />
                   <Link href={`/schedules/${scheduleId}`} title="상세 보기" className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
