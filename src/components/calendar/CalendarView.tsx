@@ -59,13 +59,17 @@ function DayPanel({ date, events }: { date: Date; events: CalendarEvent[] }) {
   const [lunarStr, setLunarStr] = useState('')
 
   useEffect(() => {
-    const y = date.getFullYear()
-    const m = date.getMonth() + 1
-    const d = date.getDate()
-    fetch(`/api/lunar?year=${y}&month=${m}&day=${d}`)
-      .then((r) => r.json())
-      .then((data) => setLunarStr(data.lunarStr ?? ''))
-      .catch(() => setLunarStr(''))
+    let cancelled = false
+    import('korean-lunar-calendar').then((mod) => {
+      if (cancelled) return
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const KLC = (mod as any).default ?? mod
+      const cal = new KLC()
+      cal.setSolarDate(date.getFullYear(), date.getMonth() + 1, date.getDate())
+      const l = cal.getLunarCalendar()
+      if (!cancelled) setLunarStr(`음력 ${l.intercalation ? '윤' : ''}${l.month}월 ${l.day}일`)
+    }).catch(() => { if (!cancelled) setLunarStr('') })
+    return () => { cancelled = true }
   }, [date])
 
   const dayEvents = events
