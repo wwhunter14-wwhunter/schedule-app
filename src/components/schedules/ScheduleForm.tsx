@@ -171,18 +171,27 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
     if (!file) return
 
     setUploading(true)
-    const formData = new FormData()
-    formData.append('file', file)
+    setError('')
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
 
-    const res = await fetch('/api/upload', { method: 'POST', body: formData })
-    const data = await res.json()
-    if (res.ok) {
-      setAttachmentName(data.name)
-      setAttachmentPath(data.path)
-    } else {
-      setError(data.error ?? '파일 업로드에 실패했습니다')
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const text = await res.text()
+      let data: { name?: string; path?: string; error?: string } = {}
+      try { data = JSON.parse(text) } catch { data = { error: text } }
+
+      if (res.ok && data.path) {
+        setAttachmentName(data.name ?? file.name)
+        setAttachmentPath(data.path)
+      } else {
+        setError(data.error ?? `업로드 실패 (${res.status})`)
+      }
+    } catch (err) {
+      setError(`업로드 오류: ${err instanceof Error ? err.message : String(err)}`)
+    } finally {
+      setUploading(false)
     }
-    setUploading(false)
   }
 
   const removeAttachment = () => {
