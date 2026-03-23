@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import CalendarView from '@/components/calendar/CalendarView'
-import TodayPanel from '@/components/calendar/TodayPanel'
 
 export const metadata = { title: '캘린더' }
 
@@ -17,7 +16,6 @@ export default function CalendarPage() {
         </Link>
       </div>
       <CalendarView />
-      <TodayPanel />
     </div>
   )
 }
