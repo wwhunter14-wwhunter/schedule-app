@@ -91,6 +91,8 @@ export async function POST(request: NextRequest) {
       memo: body.memo,
       attachmentName: body.attachmentName,
       attachmentPath: body.attachmentPath,
+      attachmentName2: body.attachmentName2,
+      attachmentPath2: body.attachmentPath2,
       startAt, endAt,
       allDay: body.allDay ?? false,
       color: body.color,

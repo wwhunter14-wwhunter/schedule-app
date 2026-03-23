@@ -78,6 +78,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       memo: body.memo,
       attachmentName: body.attachmentName,
       attachmentPath: body.attachmentPath,
+      attachmentName2: body.attachmentName2,
+      attachmentPath2: body.attachmentPath2,
       startAt: body.startAt ? new Date(body.startAt) : undefined,
       endAt: body.endAt ? new Date(body.endAt) : undefined,
       allDay: body.allDay,

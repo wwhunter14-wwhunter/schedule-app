@@ -147,6 +147,12 @@ export default async function ScheduleDetailPage({
             <AttachmentViewer name={schedule.attachmentName} path={schedule.attachmentPath} />
           </div>
         )}
+        {schedule.attachmentName2 && schedule.attachmentPath2 && (
+          <div className="flex items-start gap-3">
+            <span className="text-slate-400 mt-0.5 pt-2">📎</span>
+            <AttachmentViewer name={schedule.attachmentName2} path={schedule.attachmentPath2} />
+          </div>
+        )}
 
         {schedule.notifyMinutes != null && (
           <div className="flex items-start gap-3">

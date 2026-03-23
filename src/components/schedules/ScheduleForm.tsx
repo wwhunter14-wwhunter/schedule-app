@@ -96,7 +96,11 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
   // 파일 첨부 상태
   const [attachmentName, setAttachmentName] = useState(schedule?.attachmentName ?? '')
   const [attachmentPath, setAttachmentPath] = useState(schedule?.attachmentPath ?? '')
+  const [attachmentName2, setAttachmentName2] = useState(schedule?.attachmentName2 ?? '')
+  const [attachmentPath2, setAttachmentPath2] = useState(schedule?.attachmentPath2 ?? '')
   const [uploading, setUploading] = useState(false)
+  const [uploading2, setUploading2] = useState(false)
+  const fileInputRef2 = useRef<HTMLInputElement>(null)
 
   // 태그 인라인 생성 상태
   const [newTagName, setNewTagName] = useState('')
@@ -200,6 +204,37 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
+  const handleFileChange2 = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading2(true)
+    setError('')
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const text = await res.text()
+      let data: { name?: string; path?: string; error?: string } = {}
+      try { data = JSON.parse(text) } catch { data = { error: text } }
+      if (res.ok && data.path) {
+        setAttachmentName2(data.name ?? file.name)
+        setAttachmentPath2(data.path)
+      } else {
+        setError(data.error ?? `업로드 실패 (${res.status})`)
+      }
+    } catch (err) {
+      setError(`업로드 오류: ${err instanceof Error ? err.message : String(err)}`)
+    } finally {
+      setUploading2(false)
+    }
+  }
+
+  const removeAttachment2 = () => {
+    setAttachmentName2('')
+    setAttachmentPath2('')
+    if (fileInputRef2.current) fileInputRef2.current.value = ''
+  }
+
   const handleAddTag = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return
     e.preventDefault()
@@ -242,6 +277,8 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
       memo: memo || undefined,
       attachmentName: attachmentName || undefined,
       attachmentPath: attachmentPath || undefined,
+      attachmentName2: attachmentName2 || undefined,
+      attachmentPath2: attachmentPath2 || undefined,
       startAt: new Date(startAt).toISOString(),
       endAt: new Date(endAt).toISOString(),
       allDay,
@@ -353,43 +390,43 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
         />
       </div>
 
-      {/* 파일 첨부 */}
+      {/* 파일 첨부 (최대 2개) */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">파일 첨부</label>
-        {attachmentName ? (
-          <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
-            <span className="text-slate-500 dark:text-slate-400">📎</span>
-            <span className="text-sm text-slate-800 dark:text-slate-200 flex-1 truncate">{attachmentName}</span>
-            <button
-              type="button"
-              onClick={removeAttachment}
-              className="text-red-400 hover:text-red-600 text-sm flex-shrink-0"
-            >
-              삭제
-            </button>
-          </div>
-        ) : (
-          <div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              id="fileUpload"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <label
-              htmlFor="fileUpload"
-              className={`flex items-center justify-center gap-2 w-full border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg px-4 py-5 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-colors ${
-                uploading ? 'opacity-50 pointer-events-none' : ''
-              }`}
-            >
-              <span className="text-2xl">📎</span>
-              <span className="text-sm text-slate-500 dark:text-slate-400">
-                {uploading ? '업로드 중...' : '클릭하여 파일 첨부'}
-              </span>
-            </label>
-          </div>
-        )}
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">파일 첨부 <span className="text-slate-400 font-normal">(최대 2개)</span></label>
+        <div className="space-y-2">
+          {/* 첫 번째 파일 */}
+          {attachmentName ? (
+            <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
+              <span className="text-slate-500 dark:text-slate-400">📎</span>
+              <span className="text-sm text-slate-800 dark:text-slate-200 flex-1 truncate">{attachmentName}</span>
+              <button type="button" onClick={removeAttachment} className="text-red-400 hover:text-red-600 text-sm flex-shrink-0">삭제</button>
+            </div>
+          ) : (
+            <div>
+              <input ref={fileInputRef} type="file" id="fileUpload" onChange={handleFileChange} className="hidden" />
+              <label htmlFor="fileUpload" className={`flex items-center justify-center gap-2 w-full border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg px-4 py-4 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                <span className="text-xl">📎</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{uploading ? '업로드 중...' : '파일 1 선택'}</span>
+              </label>
+            </div>
+          )}
+          {/* 두 번째 파일 */}
+          {attachmentName2 ? (
+            <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg">
+              <span className="text-slate-500 dark:text-slate-400">📎</span>
+              <span className="text-sm text-slate-800 dark:text-slate-200 flex-1 truncate">{attachmentName2}</span>
+              <button type="button" onClick={removeAttachment2} className="text-red-400 hover:text-red-600 text-sm flex-shrink-0">삭제</button>
+            </div>
+          ) : (
+            <div>
+              <input ref={fileInputRef2} type="file" id="fileUpload2" onChange={handleFileChange2} className="hidden" />
+              <label htmlFor="fileUpload2" className={`flex items-center justify-center gap-2 w-full border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg px-4 py-4 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 transition-colors ${uploading2 ? 'opacity-50 pointer-events-none' : ''}`}>
+                <span className="text-xl">📎</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">{uploading2 ? '업로드 중...' : '파일 2 선택'}</span>
+              </label>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 하루종일 */}
@@ -526,7 +563,7 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
       <div className="flex gap-3">
         <button
           type="submit"
-          disabled={loading || uploading}
+          disabled={loading || uploading || uploading2}
           className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium"
         >
           {loading ? '저장 중...' : isEdit ? '수정' : '저장'}

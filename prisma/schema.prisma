@@ -59,6 +59,8 @@ model Schedule {
   memo            String?
   attachmentName  String?
   attachmentPath  String?
+  attachmentName2 String?
+  attachmentPath2 String?
   startAt         DateTime
   endAt           DateTime
   allDay          Boolean        @default(false)
