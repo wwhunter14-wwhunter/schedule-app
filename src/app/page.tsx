@@ -21,6 +21,7 @@ type DashboardSchedule = {
   isImportant: boolean
   isRecurring: boolean
   sourceUrl: string | null
+  updatedAt: Date
   category: { name: string; color: string } | null
   tags: { tag: { id: number; name: string } }[]
 }
@@ -35,7 +36,7 @@ export default async function DashboardPage() {
 
   const regularSchedules = await prisma.schedule.findMany({
     where: { userId, startAt: { gte: todayStart, lte: tomorrowEnd }, isRecurring: false },
-    orderBy: { startAt: 'asc' },
+    orderBy: { updatedAt: 'desc' },
     take: 20,
     include: { category: true, tags: { include: { tag: true } } },
   })
@@ -50,13 +51,13 @@ export default async function DashboardPage() {
     .flatMap((m) => expandRecurringSchedule(m as Parameters<typeof expandRecurringSchedule>[0], todayStart, tomorrowEnd))
     .map((occ) => {
       const master = recurringMasters.find((m) => m.id === occ.scheduleId)!
-      return { id: occ.id, title: occ.title, startAt: occ.startAt, endAt: occ.endAt, allDay: occ.allDay, color: occ.color, isImportant: master.isImportant, isRecurring: true, sourceUrl: master.sourceUrl ?? null, category: master.category, tags: master.tags }
+      return { id: occ.id, title: occ.title, startAt: occ.startAt, endAt: occ.endAt, allDay: occ.allDay, color: occ.color, isImportant: master.isImportant, isRecurring: true, sourceUrl: master.sourceUrl ?? null, updatedAt: master.updatedAt, category: master.category, tags: master.tags }
     })
 
   const upcomingSchedules: DashboardSchedule[] = [
     ...regularSchedules.map((s) => ({ ...s, id: s.id as string | number, sourceUrl: s.sourceUrl ?? null, isImportant: s.isImportant })),
     ...recurringOccurrences,
-  ].sort((a, b) => a.startAt.getTime() - b.startAt.getTime())
+  ].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
 
   const todaySchedules = upcomingSchedules.filter((s) => isToday(s.startAt))
   const tomorrowSchedules = upcomingSchedules.filter((s) => isTomorrow(s.startAt))
