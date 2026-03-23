@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import ScheduleForm, { type PrefillData } from '@/components/schedules/ScheduleForm'
 
-export default function NewSchedulePage() {
+function NewScheduleContent() {
   const searchParams = useSearchParams()
   const dateParam = searchParams.get('date')
   const [url, setUrl] = useState('')
@@ -30,7 +30,7 @@ export default function NewSchedulePage() {
         setError(data.error ?? '분석에 실패했습니다')
       } else {
         setPrefill(data)
-        setFormKey((k) => k + 1) // ScheduleForm 리마운트로 초기값 반영
+        setFormKey((k) => k + 1)
       }
     } catch {
       setError('네트워크 오류가 발생했습니다')
@@ -88,5 +88,13 @@ export default function NewSchedulePage() {
 
       <ScheduleForm key={formKey} prefill={prefill ?? undefined} />
     </div>
+  )
+}
+
+export default function NewSchedulePage() {
+  return (
+    <Suspense>
+      <NewScheduleContent />
+    </Suspense>
   )
 }
