@@ -18,7 +18,24 @@ function getFileType(name: string): 'image' | 'pdf' | 'video' | 'other' {
 export default function AttachmentViewer({ name, path }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [lightbox, setLightbox] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const type = getFileType(name)
+
+  const handleDownload = async () => {
+    setDownloading(true)
+    try {
+      const res = await fetch(path)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = name
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return (
     <div className="flex-1">
@@ -48,13 +65,13 @@ export default function AttachmentViewer({ name, path }: Props) {
             </button>
           )}
           {/* 다운로드 버튼 */}
-          <a
-            href={path}
-            download={name}
-            className="px-2.5 py-1 text-xs border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="px-2.5 py-1 text-xs border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
           >
-            다운로드
-          </a>
+            {downloading ? '...' : '다운로드'}
+          </button>
         </div>
       </div>
 
