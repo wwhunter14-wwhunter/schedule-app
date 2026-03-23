@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { format, isToday, isTomorrow, startOfDay, endOfDay, addDays } from 'date-fns'
-import { ko } from 'date-fns/locale'
+import { isToday, isTomorrow, startOfDay, endOfDay, addDays } from 'date-fns'
+import { formatKST } from '@/lib/formatKST'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import CategoryBadge from '@/components/categories/CategoryBadge'
@@ -67,7 +67,7 @@ export default async function DashboardPage() {
       <div className="flex items-start justify-between mb-8">
         <div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">
-            {format(now, 'yyyy년 M월 d일 (E)', { locale: ko })}
+            {formatKST(now, 'yyyy년 M월 d일 (E)')}
           </p>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">안녕하세요, {session?.user?.name ?? '?'} 👋</h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
@@ -128,7 +128,7 @@ function ScheduleSection({ title, schedules, emptyText, className = '' }: {
                     {s.isRecurring && <span className="text-xs text-slate-400">↻</span>}
                   </div>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                    {s.allDay ? '하루 종일' : `${format(s.startAt, 'HH:mm')} – ${format(s.endAt, 'HH:mm')}`}
+                    {s.allDay ? '하루 종일' : `${formatKST(s.startAt, 'HH:mm')} – ${formatKST(s.endAt, 'HH:mm')}`}
                   </p>
                   {s.category && <div className="mt-1.5"><CategoryBadge name={s.category.name} color={s.category.color} /></div>}
                 </Link>

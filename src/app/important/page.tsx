@@ -2,8 +2,7 @@ export const dynamic = 'force-dynamic'
 export const metadata = { title: '중요 일정' }
 
 import Link from 'next/link'
-import { format } from 'date-fns'
-import { ko } from 'date-fns/locale'
+import { formatKST } from '@/lib/formatKST'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import CategoryBadge from '@/components/categories/CategoryBadge'
@@ -50,7 +49,7 @@ export default async function ImportantPage() {
                   <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">{s.title}</p>
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                  {format(s.startAt, 'yyyy.MM.dd (E)', { locale: ko })} {s.allDay ? '(하루 종일)' : format(s.startAt, 'HH:mm')}
+                  {formatKST(s.startAt, 'yyyy.MM.dd (E)')} {s.allDay ? '(하루 종일)' : formatKST(s.startAt, 'HH:mm')}
                 </p>
                 <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                   {s.category && <CategoryBadge name={s.category.name} color={s.category.color} />}

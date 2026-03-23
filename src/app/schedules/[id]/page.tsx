@@ -2,8 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { format } from 'date-fns'
-import { ko } from 'date-fns/locale'
+import { formatKST, toKSTDateString } from '@/lib/formatKST'
 import { prisma } from '@/lib/prisma'
 import CategoryBadge from '@/components/categories/CategoryBadge'
 import ScheduleDeleteButton from '@/components/schedules/ScheduleDeleteButton'
@@ -90,14 +89,14 @@ export default async function ScheduleDetailPage({
           <div>
             {schedule.allDay ? (
               <p className="text-slate-900 dark:text-slate-100">
-                {format(schedule.startAt, 'yyyy년 M월 d일 (E)', { locale: ko })}
-                {schedule.startAt.toDateString() !== schedule.endAt.toDateString() &&
-                  ` ~ ${format(schedule.endAt, 'M월 d일 (E)', { locale: ko })}`}
+                {formatKST(schedule.startAt, 'yyyy년 M월 d일 (E)')}
+                {toKSTDateString(schedule.startAt) !== toKSTDateString(schedule.endAt) &&
+                  ` ~ ${formatKST(schedule.endAt, 'M월 d일 (E)')}`}
               </p>
             ) : (
               <p className="text-slate-900 dark:text-slate-100">
-                {format(schedule.startAt, 'yyyy년 M월 d일 (E) HH:mm', { locale: ko })} ~{' '}
-                {format(schedule.endAt, 'HH:mm', { locale: ko })}
+                {formatKST(schedule.startAt, 'yyyy년 M월 d일 (E) HH:mm')} ~{' '}
+                {formatKST(schedule.endAt, 'HH:mm')}
               </p>
             )}
           </div>
@@ -174,7 +173,7 @@ export default async function ScheduleDetailPage({
               )}
               {schedule.recurringRule.endDate && (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {format(schedule.recurringRule.endDate, 'yyyy년 M월 d일', { locale: ko })} 까지
+                  {formatKST(schedule.recurringRule.endDate, 'yyyy년 M월 d일')} 까지
                 </p>
               )}
             </div>

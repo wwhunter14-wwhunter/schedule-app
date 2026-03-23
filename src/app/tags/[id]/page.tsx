@@ -2,8 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { format } from 'date-fns'
-import { ko } from 'date-fns/locale'
+import { formatKST } from '@/lib/formatKST'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import CategoryBadge from '@/components/categories/CategoryBadge'
@@ -107,8 +106,8 @@ export default async function TagSchedulesPage({
                   </div>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                     {s.allDay
-                      ? format(s.startAt, 'yyyy년 M월 d일 (E)', { locale: ko })
-                      : format(s.startAt, 'yyyy년 M월 d일 (E) HH:mm', { locale: ko })}
+                      ? formatKST(s.startAt, 'yyyy년 M월 d일 (E)')
+                      : formatKST(s.startAt, 'yyyy년 M월 d일 (E) HH:mm')}
                   </p>
                   <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                     {s.category && (

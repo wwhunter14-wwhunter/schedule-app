@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { formatKST } from '@/lib/formatKST'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import CategoryBadge from '@/components/categories/CategoryBadge'
@@ -51,7 +51,7 @@ export default async function SchedulesPage({
                   <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">{s.title}</p>
                   {s.isRecurring && <span className="text-xs text-slate-400">↻</span>}
                 </div>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{format(s.startAt, 'yyyy.MM.dd')} {s.allDay ? '(하루 종일)' : format(s.startAt, 'HH:mm')}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{formatKST(s.startAt, 'yyyy.MM.dd')} {s.allDay ? '(하루 종일)' : formatKST(s.startAt, 'HH:mm')}</p>
                 <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                   {s.category && <CategoryBadge name={s.category.name} color={s.category.color} />}
                   {s.tags.map(({ tag }) => <span key={tag.id} className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">#{tag.name}</span>)}
