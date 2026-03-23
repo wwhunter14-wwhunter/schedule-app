@@ -39,12 +39,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: '허용되지 않는 파일 확장자입니다' }, { status: 400 })
   }
 
-  const blob = await put(`attachments/${Date.now()}-${file.name}`, file, {
-    access: 'public',
-  })
+  try {
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const blob = await put(`attachments/${Date.now()}-${safeName}`, file, {
+      access: 'public',
+    })
 
-  return NextResponse.json({
-    name: file.name,
-    path: blob.url,
-  })
+    return NextResponse.json({
+      name: file.name,
+      path: blob.url,
+    })
+  } catch (err) {
+    console.error('Blob upload error:', err)
+    return NextResponse.json({ error: `업로드 실패: ${err instanceof Error ? err.message : String(err)}` }, { status: 500 })
+  }
 }
