@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { upload } from '@vercel/blob/client'
 import type { Category, Tag } from '@prisma/client'
 import type { ScheduleWithRelations } from '@/lib/types'
 import RecurringRuleFields, { type RecurringData } from './RecurringRuleFields'
@@ -169,15 +170,16 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
   }
 
   const uploadFile = async (file: File): Promise<{ name: string; path: string } | null> => {
-    const formData = new FormData()
-    formData.append('file', file)
-    const res = await fetch('/api/upload', { method: 'POST', body: formData })
-    const text = await res.text()
-    let data: { name?: string; path?: string; error?: string } = {}
-    try { data = JSON.parse(text) } catch { data = { error: text } }
-    if (res.ok && data.path) return { name: data.name ?? file.name, path: data.path }
-    setError(data.error ?? `업로드 실패 (${res.status})`)
-    return null
+    try {
+      const blob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+      })
+      return { name: file.name, path: blob.url }
+    } catch (err) {
+      setError(`업로드 실패: ${err instanceof Error ? err.message : String(err)}`)
+      return null
+    }
   }
 
   const handleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
