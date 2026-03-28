@@ -38,6 +38,10 @@ async function fetchMeta(url: string) {
   }
 }
 
+export async function GET() {
+  return NextResponse.json({ ok: true })
+}
+
 export async function POST(request: NextRequest) {
   const update = await request.json()
 
@@ -47,12 +51,23 @@ export async function POST(request: NextRequest) {
   const chatId: number = message.chat.id
   const text: string = message.text
 
+  if (text === '/start' || text.startsWith('/start ')) {
+    await sendMessage(chatId, '안녕하세요! 📅 일정 등록 봇입니다.\n\nURL을 보내주시면 자동으로 일정을 분석하고 등록해드립니다.\n\n예시:\nhttps://youtube.com/watch?v=...\nhttps://example.com/article')
+    return NextResponse.json({ ok: true })
+  }
+
   const urls = extractUrls(text)
-  if (urls.length === 0) return NextResponse.json({ ok: true })
+  if (urls.length === 0) {
+    await sendMessage(chatId, '📎 URL을 포함한 메시지를 보내주세요.\n예: https://youtube.com/watch?v=...')
+    return NextResponse.json({ ok: true })
+  }
 
   const apiToken = process.env.TELEGRAM_USER_TOKEN
-  const user = await prisma.user.findUnique({ where: { apiToken } })
-  if (!user) return NextResponse.json({ ok: true })
+  const user = apiToken ? await prisma.user.findUnique({ where: { apiToken } }) : null
+  if (!user) {
+    await sendMessage(chatId, '❌ 봇 설정이 완료되지 않았습니다. 앱 설정에서 API 토큰을 확인해주세요.')
+    return NextResponse.json({ ok: true })
+  }
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
