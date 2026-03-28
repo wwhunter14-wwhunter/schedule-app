@@ -25,15 +25,28 @@ async function fetchMeta(url: string) {
   }
 }
 
+async function sendTelegramMessage(chatId: string | number, text: string) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN
+  if (!botToken || !chatId) return
+  await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+  }).catch(() => null)
+}
+
 export async function POST(request: NextRequest) {
-  const { token, url } = await request.json()
+  const { token, url, chatId } = await request.json()
   if (!token || !url) return NextResponse.json({ error: 'token과 url이 필요합니다' }, { status: 400 })
 
   const user = await prisma.user.findUnique({ where: { apiToken: token } })
   if (!user) return NextResponse.json({ error: '유효하지 않은 토큰입니다' }, { status: 401 })
 
   const meta = await fetchMeta(url).catch(() => null)
-  if (!meta) return NextResponse.json({ error: 'URL에서 정보를 읽을 수 없습니다' }, { status: 400 })
+  if (!meta) {
+    await sendTelegramMessage(chatId, '❌ URL에서 정보를 읽을 수 없습니다.')
+    return NextResponse.json({ error: 'URL에서 정보를 읽을 수 없습니다' }, { status: 400 })
+  }
 
   const isYouTube = /youtube\.com|youtu\.be/.test(url)
   const contextInfo = isYouTube
@@ -56,6 +69,7 @@ export async function POST(request: NextRequest) {
     const jsonMatch = raw.match(/\{[\s\S]*\}/)
     parsed = JSON.parse(jsonMatch?.[0] ?? raw)
   } catch {
+    await sendTelegramMessage(chatId, '❌ AI 분석에 실패했습니다. 잠시 후 다시 시도해주세요.')
     return NextResponse.json({ error: 'AI 분석 실패' }, { status: 500 })
   }
 
@@ -105,6 +119,17 @@ export async function POST(request: NextRequest) {
     include: { category: true, tags: { include: { tag: true } } },
   })
 
+  const tagList = schedule.tags.map((t) => t.tag.name)
+  const lines = [
+    `✅ <b>${schedule.title}</b>`,
+    schedule.description ? `📌 ${schedule.description}` : '',
+    schedule.summary ? `\n${schedule.summary}` : '',
+    schedule.category?.name ? `🗂 ${schedule.category.name}` : '',
+    tagList.length ? `🏷 ${tagList.join(' ')}` : '',
+  ].filter(Boolean).join('\n')
+
+  await sendTelegramMessage(chatId, lines)
+
   return NextResponse.json({
     ok: true,
     schedule: {
@@ -115,7 +140,7 @@ export async function POST(request: NextRequest) {
       sourceUrl: schedule.sourceUrl,
       memo: schedule.memo,
       category: schedule.category?.name,
-      tags: schedule.tags.map((t) => t.tag.name),
+      tags: tagList,
     },
   })
 }
