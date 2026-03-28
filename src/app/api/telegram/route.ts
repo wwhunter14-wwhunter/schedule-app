@@ -1,18 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendTelegramMessage } from '@/lib/telegram'
 import Anthropic from '@anthropic-ai/sdk'
 
 function extractUrls(text: string): string[] {
   return text.match(/https?:\/\/[^\s]+/g) ?? []
-}
-
-async function sendMessage(chatId: number, text: string) {
-  const token = process.env.TELEGRAM_BOT_TOKEN
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text }),
-  })
 }
 
 async function fetchMeta(url: string) {
@@ -46,9 +38,29 @@ export async function POST(request: NextRequest) {
 
   const chatId: number = message.chat.id
   const text: string = message.text
+  const chatIdStr = chatId.toString()
+
+  // Check for an active bridge session
+  const session = await prisma.telegramSession.findUnique({ where: { chatId: chatIdStr } })
+  if (session) {
+    await prisma.telegramMessage.create({ data: { sessionId: session.id, text } })
+    await sendTelegramMessage(chatId, '⏳ Thinking...')
+    return NextResponse.json({ ok: true })
+  }
 
   const urls = extractUrls(text)
-  if (urls.length === 0) return NextResponse.json({ ok: true })
+
+  // No session and no URLs — send pairing code
+  if (urls.length === 0) {
+    const code = Math.random().toString(36).slice(2, 8).toUpperCase()
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+    await prisma.telegramPairCode.create({ data: { code, chatId: chatIdStr, expiresAt } })
+    await sendTelegramMessage(
+      chatId,
+      `Your pairing code is: ${code}\n\nIn Claude Code, run:\n/telegram:access pair ${code}\n\n(Code expires in 10 minutes)`
+    )
+    return NextResponse.json({ ok: true })
+  }
 
   const apiToken = process.env.TELEGRAM_USER_TOKEN
   const user = await prisma.user.findUnique({ where: { apiToken } })
@@ -57,12 +69,12 @@ export async function POST(request: NextRequest) {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   for (const url of urls) {
-    await sendMessage(chatId, `🔍 분석 중...`)
+    await sendTelegramMessage(chatId, `🔍 분석 중...`)
 
     try {
       const meta = await fetchMeta(url)
       if (!meta) {
-        await sendMessage(chatId, `❌ URL을 읽을 수 없습니다: ${url}`)
+        await sendTelegramMessage(chatId, `❌ URL을 읽을 수 없습니다: ${url}`)
         continue
       }
 
@@ -86,7 +98,7 @@ export async function POST(request: NextRequest) {
         const jsonMatch = raw.match(/\{[\s\S]*\}/)
         parsed = JSON.parse(jsonMatch?.[0] ?? raw)
       } catch {
-        await sendMessage(chatId, `❌ AI 분석 실패: ${url}`)
+        await sendTelegramMessage(chatId, `❌ AI 분석 실패: ${url}`)
         continue
       }
 
@@ -132,9 +144,9 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      await sendMessage(chatId, `✅ 일정 등록 완료!\n📌 ${schedule.title}\n🏷️ ${parsed.categoryName ?? '미분류'}`)
+      await sendTelegramMessage(chatId, `✅ 일정 등록 완료!\n📌 ${schedule.title}\n🏷️ ${parsed.categoryName ?? '미분류'}`)
     } catch {
-      await sendMessage(chatId, `❌ 오류가 발생했습니다: ${url}`)
+      await sendTelegramMessage(chatId, `❌ 오류가 발생했습니다: ${url}`)
     }
   }
 

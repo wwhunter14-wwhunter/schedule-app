@@ -92,3 +92,28 @@ model ScheduleTag {
 
   @@id([scheduleId, tagId])
 }
+
+model TelegramPairCode {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  chatId    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model TelegramSession {
+  id           Int               @id @default(autoincrement())
+  sessionToken String            @unique @default(cuid())
+  chatId       String            @unique
+  createdAt    DateTime          @default(now())
+  messages     TelegramMessage[]
+}
+
+model TelegramMessage {
+  id        Int             @id @default(autoincrement())
+  session   TelegramSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId Int
+  text      String
+  processed Boolean         @default(false)
+  createdAt DateTime        @default(now())
+}
