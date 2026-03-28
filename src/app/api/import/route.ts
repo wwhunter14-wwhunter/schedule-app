@@ -111,6 +111,8 @@ export async function POST(request: NextRequest) {
       id: schedule.id,
       title: schedule.title,
       description: schedule.description,
+      summary: schedule.summary,
+      sourceUrl: schedule.sourceUrl,
       memo: schedule.memo,
       category: schedule.category?.name,
       tags: schedule.tags.map((t) => t.tag.name),
