@@ -11,6 +11,7 @@ export default async function TagsPage() {
   const tags = await prisma.tag.findMany({
     where: { userId },
     orderBy: { name: 'asc' },
+    take: 10,
     include: {
       _count: { select: { schedules: true } },
     },
