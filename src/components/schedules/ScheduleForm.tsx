@@ -340,18 +340,6 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
         />
       </div>
 
-      {/* 요약 */}
-      <div>
-        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">요약</label>
-        <textarea
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          rows={3}
-          className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
-          placeholder="콘텐츠 핵심 요약 (선택)"
-        />
-      </div>
-
       {/* 메모 */}
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">메모</label>
@@ -495,7 +483,7 @@ export default function ScheduleForm({ schedule, prefill }: Props) {
       <div>
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">태그</label>
         <div className="flex flex-wrap gap-2 mb-2">
-          {tags.map((tag) => (
+          {tags.slice(0, 10).map((tag) => (
             <button
               key={tag.id}
               type="button"
