@@ -79,7 +79,7 @@ export default async function ScheduleDetailPage({
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
           </Link>
-          <ScheduleDeleteButton id={schedule.id} />
+          <ScheduleDeleteButton id={schedule.id} redirectTo="/schedules" />
         </div>
       </div>
 
