@@ -128,12 +128,21 @@ export default function AttachmentViewer({ name, path }: Props) {
           className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
           onClick={() => setLightbox(false)}
         >
-          <button
-            className="absolute top-4 right-4 text-white text-3xl leading-none hover:opacity-70"
-            onClick={() => setLightbox(false)}
-          >
-            ✕
-          </button>
+          <div className="absolute top-4 right-4 flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="px-3 py-1.5 text-sm text-white border border-white/40 rounded hover:bg-white/20 transition-colors disabled:opacity-50"
+            >
+              {downloading ? '...' : '다운로드'}
+            </button>
+            <button
+              className="text-white text-3xl leading-none hover:opacity-70"
+              onClick={() => setLightbox(false)}
+            >
+              ✕
+            </button>
+          </div>
           <img
             src={path}
             alt={name}
