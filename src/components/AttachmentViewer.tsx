@@ -58,14 +58,13 @@ export default function AttachmentViewer({ name, path }: Props) {
         <div className="flex items-center gap-1 flex-shrink-0">
           {/* 열기 버튼 (이미지/PDF/동영상은 토글, 그 외 새 탭) */}
           {type === 'other' ? (
-            <a
-              href={path}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-2.5 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="px-2.5 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors disabled:opacity-50"
             >
               열기
-            </a>
+            </button>
           ) : (
             <button
               onClick={() => setExpanded((v) => !v)}
