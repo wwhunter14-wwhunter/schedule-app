@@ -47,7 +47,14 @@ export default function AttachmentViewer({ name, path }: Props) {
         <span className="text-lg">
           {type === 'image' ? '🖼️' : type === 'pdf' ? '📄' : type === 'video' ? '🎬' : '📎'}
         </span>
-        <span className="text-sm text-slate-800 dark:text-slate-200 font-medium flex-1 truncate">{name}</span>
+        <button
+          onClick={handleDownload}
+          disabled={downloading}
+          className="text-sm text-indigo-600 dark:text-indigo-400 font-medium flex-1 truncate text-left hover:underline disabled:opacity-50 cursor-pointer"
+          title="클릭하여 다운로드"
+        >
+          {name}
+        </button>
         <div className="flex items-center gap-1 flex-shrink-0">
           {/* 열기 버튼 (이미지/PDF/동영상은 토글, 그 외 새 탭) */}
           {type === 'other' ? (
