@@ -32,6 +32,18 @@ export async function POST(request: NextRequest) {
   const user = await prisma.user.findUnique({ where: { apiToken: token } })
   if (!user) return NextResponse.json({ error: '유효하지 않은 토큰입니다' }, { status: 401 })
 
+  // 하루 2화 제한
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  const todayEnd = new Date()
+  todayEnd.setHours(23, 59, 59, 999)
+  const todayCount = await prisma.schedule.count({
+    where: { userId: user.id, createdAt: { gte: todayStart, lte: todayEnd } },
+  })
+  if (todayCount >= 2) {
+    return NextResponse.json({ error: '오늘 업로드 한도(2화)에 도달했습니다' }, { status: 429 })
+  }
+
   const meta = await fetchMeta(url).catch(() => null)
   if (!meta) return NextResponse.json({ error: 'URL에서 정보를 읽을 수 없습니다' }, { status: 400 })
 
