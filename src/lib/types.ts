@@ -46,10 +46,10 @@ export type CreateScheduleInput = {
   summary?: string
   sourceUrl?: string
   memo?: string
-  attachmentName?: string
-  attachmentPath?: string
-  attachmentName2?: string
-  attachmentPath2?: string
+  attachmentName?: string | null
+  attachmentPath?: string | null
+  attachmentName2?: string | null
+  attachmentPath2?: string | null
   startAt: string
   endAt: string
   allDay?: boolean
