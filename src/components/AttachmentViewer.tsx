@@ -90,12 +90,24 @@ export default function AttachmentViewer({ name, path }: Props) {
             </>
           )}
           {type === 'pdf' && (
-            <iframe
-              src={path}
-              title={name}
+            <object
+              data={path}
+              type="application/pdf"
               className="w-full"
               style={{ height: '70vh' }}
-            />
+            >
+              <div className="flex flex-col items-center justify-center py-10 gap-3 bg-slate-50 dark:bg-slate-800">
+                <p className="text-sm text-slate-500 dark:text-slate-400">브라우저에서 PDF를 표시할 수 없습니다.</p>
+                <a
+                  href={path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                >
+                  새 탭에서 열기
+                </a>
+              </div>
+            </object>
           )}
           {type === 'video' && (
             <video

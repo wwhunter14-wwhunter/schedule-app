@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
         allowedContentTypes: ALLOWED_CONTENT_TYPES,
         maximumSizeInBytes: 10 * 1024 * 1024, // 10MB
         addRandomSuffix: true,
+        contentDisposition: 'inline',
         tokenPayload: JSON.stringify({ folder: 'attachments' }),
       }),
       onUploadCompleted: async () => {},
